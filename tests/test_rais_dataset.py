@@ -1,6 +1,13 @@
 import pandas as pd
 
-from src.rais_dataset import COLUNAS, carregar_stem, codigo, numero, tratar_bloco
+from src.rais_dataset import (
+    COLUNAS,
+    ETAPAS,
+    carregar_stem,
+    codigo,
+    numero,
+    tratar_bloco,
+)
 
 PADRAO = {
     "CBO 2002 Ocupação - Código": "212405", "CNAE 2.0 Classe - Código": "62015",
@@ -17,8 +24,7 @@ def bloco(*linhas):
 
 
 def rodar(df):
-    contagem = dict.fromkeys(["lidas", "apos_filtro_stem", "apos_filtro_setor_privado",
-                              "apos_tirar_abandonados", "apos_tirar_remuneracao_zero"], 0)
+    contagem = dict.fromkeys(ETAPAS, 0)
     return tratar_bloco(df, carregar_stem(), 2025, "centro_oeste", contagem), contagem
 
 
@@ -44,11 +50,13 @@ def test_filtros_removem_publico_abandonado_e_remuneracao_zero():
         {"Tipo Vínculo - Código": "30"},           # estatutário: sai
         {"Ind Vínculo Abandonado - Código": "1"},  # abandonado: sai
         {"Vl Rem Média Nom": ".00"},               # remuneração zero: sai
+        {"Vl Rem Média Nom": "5.00", "Vl Rem Média (SM)": ".00"},  # R$ 5/mês, abaixo de 0,3 SM: sai
         {"Tipo Vínculo - Código": "55", "Ind Vínculo Ativo 31/12 - Código": "0"},  # aprendiz desligado: fica
     ))
     assert len(saida) == 2
-    assert contagem == {"lidas": 5, "apos_filtro_stem": 5, "apos_filtro_setor_privado": 4,
-                        "apos_tirar_abandonados": 3, "apos_tirar_remuneracao_zero": 2}
+    assert contagem == {"lidas": 6, "apos_filtro_stem": 6, "apos_filtro_setor_privado": 5,
+                        "apos_tirar_abandonados": 4, "apos_tirar_remuneracao_zero": 3,
+                        "apos_tirar_remuneracao_abaixo_0_3_sm": 2, "remuneracao_reais_e_sm_destrocadas": 0}
     assert saida["tipo_contrato"].tolist() == ["clt_indeterminado", "aprendiz"]
     assert saida["ativo_31_12"].tolist() == [True, False]
 
@@ -65,3 +73,16 @@ def test_padroniza_rotulos_uf_e_ignorados():
     assert (primeira["stem_area"], primeira["nivel"]) == ("computacao", "superior")
     assert pd.isna(segunda["sexo"]) and pd.isna(segunda["raca_cor"]) and pd.isna(segunda["escolaridade"])
     assert segunda["uf"] == "GO" and segunda["nivel"] == "tecnico"
+
+
+def test_horas_aceitam_jornada_especial_e_descartam_99():
+    saida, _ = rodar(bloco({"Qtd Hora Contr": "48"}, {"Qtd Hora Contr": "99"}, {"Qtd Hora Contr": "0"}))
+    assert saida["horas_contratuais"].tolist()[0] == 48
+    assert saida["horas_contratuais"].iloc[1:].isna().all()
+
+
+def test_destroca_reais_e_salarios_minimos_trocados():
+    # a linha normal (R$ 8.500 = 5,6 SM) ensina o salário mínimo do bloco; a segunda veio trocada
+    saida, contagem = rodar(bloco({}, {"Vl Rem Média Nom": "3.70", "Vl Rem Média (SM)": "5617.52"}))
+    assert (saida["remuneracao_media"].iloc[1], saida["remuneracao_media_sm"].iloc[1]) == (5617.52, 3.70)
+    assert contagem["remuneracao_reais_e_sm_destrocadas"] == 1

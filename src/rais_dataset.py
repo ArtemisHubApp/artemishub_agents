@@ -10,7 +10,7 @@ Saídas (em data/processed/):
 Regras (decididas com o grupo em 12/11/2026):
 - só ocupações STEM, listadas por família da CBO em config/stem_cbo.csv;
 - só vínculos do setor privado (CLT, temporário, aprendiz, avulso, diretor);
-- sem vínculos abandonados e sem remuneração média zerada;
+- sem vínculos abandonados e sem remuneração média abaixo de 0,3 salário mínimo (erro de declaração);
 - desligados no ano entram, marcados em ativo_31_12.
 """
 import argparse
@@ -24,6 +24,11 @@ STEM_CBO = ROOT / "config" / "stem_cbo.csv"
 CBO_OCUPACAO = ROOT / "data" / "raw" / "cbo" / "cbo2002-ocupacao.csv"
 CBO_FAMILIA = ROOT / "data" / "raw" / "cbo" / "cbo2002-familia.csv"
 SAIDA = ROOT / "data" / "processed"
+REMUNERACAO_MINIMA_SM = 0.3  # abaixo disso (~R$ 455 em 2025) o valor mensal é tratado como erro
+HORAS_VALIDAS = (1, 60)      # 99 = não informado; 45-60 h são jornadas especiais válidas
+ETAPAS = ["lidas", "apos_filtro_stem", "apos_filtro_setor_privado", "apos_tirar_abandonados",
+          "apos_tirar_remuneracao_zero", "apos_tirar_remuneracao_abaixo_0_3_sm",
+          "remuneracao_reais_e_sm_destrocadas"]
 
 # Nome da coluna no arquivo da RAIS 2025 -> nome no dataset
 COLUNAS = {
@@ -109,8 +114,22 @@ def tratar_bloco(bloco, stem, ano, regiao, contagem, nomes_ocupacao=None, nomes_
     contagem["apos_tirar_abandonados"] += len(df)
 
     df["remuneracao_media"] = numero(df["remuneracao_media"])
+    df["remuneracao_media_sm"] = numero(df["remuneracao_media_sm"])
+    # Em alguns registros a RAIS troca as colunas (R$ 31 e 47.078 SM). É troca quando a conta inversa
+    # bate com o salário mínimo do ano (47.078 / 31 ≈ 1.518): aí destrocamos em vez de excluir.
+    reais, sm = df["remuneracao_media"], df["remuneracao_media_sm"]
+    normais = (reais > sm) & (sm > 0)
+    salario_minimo = (reais[normais] / sm[normais]).median() if normais.any() else float("nan")
+    trocado = (reais > 0) & (sm > reais) & ((sm / reais) / salario_minimo).between(0.95, 1.05)
+    df.loc[trocado, ["remuneracao_media", "remuneracao_media_sm"]] = (
+        df.loc[trocado, ["remuneracao_media_sm", "remuneracao_media"]].to_numpy())
+    contagem["remuneracao_reais_e_sm_destrocadas"] += int(trocado.sum())
+
     df = df[df["remuneracao_media"] > 0]
     contagem["apos_tirar_remuneracao_zero"] += len(df)
+
+    df = df[df["remuneracao_media_sm"] >= REMUNERACAO_MINIMA_SM]
+    contagem["apos_tirar_remuneracao_abaixo_0_3_sm"] += len(df)
 
     municipio = codigo(df["municipio_trabalho"], 6)
     municipio = municipio.where(~municipio.isin(["999999", "999997"]), codigo(df["municipio_estabelecimento"], 6))
@@ -135,10 +154,10 @@ def tratar_bloco(bloco, stem, ano, regiao, contagem, nomes_ocupacao=None, nomes_
         "escolaridade": df["escolaridade"].astype("string").str.strip().map(ESCOLARIDADE),
         "idade": numero(df["idade"]).where(lambda s: s.between(14, 100)),
         "tempo_emprego_meses": numero(df["tempo_emprego_meses"]),
-        "horas_contratuais": numero(df["horas_contratuais"]).where(lambda s: s.between(1, 44)),
+        "horas_contratuais": numero(df["horas_contratuais"]).where(lambda s: s.between(*HORAS_VALIDAS)),
         "tamanho_estabelecimento": codigo(df["tamanho_estabelecimento"], 2),
         "remuneracao_media": df["remuneracao_media"],
-        "remuneracao_media_sm": numero(df["remuneracao_media_sm"]),
+        "remuneracao_media_sm": df["remuneracao_media_sm"],
     })
     return saida
 
@@ -148,8 +167,7 @@ def construir(arquivo, ano, saida_dir=SAIDA, tamanho_bloco=500_000):
     regiao = arquivo.stem.replace("RAIS_VINC_PUB_", "").lower()
     stem = carregar_stem()
     nomes_ocupacao, nomes_familia = nomes_cbo()
-    contagem = dict.fromkeys(["lidas", "apos_filtro_stem", "apos_filtro_setor_privado",
-                              "apos_tirar_abandonados", "apos_tirar_remuneracao_zero"], 0)
+    contagem = dict.fromkeys(ETAPAS, 0)
     leitor = pd.read_csv(arquivo, sep=",", encoding="latin-1", dtype=str, usecols=list(COLUNAS),
                          chunksize=tamanho_bloco)
     partes = [tratar_bloco(b, stem, ano, regiao, contagem, nomes_ocupacao, nomes_familia) for b in leitor]
