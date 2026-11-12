@@ -1,0 +1,9 @@
+# Dados brutos ficam fora do git; os processados são versionados pelo DVC (só os .dvc vão para o git)
+data/raw/
+data/processed/*
+!data/processed/*.dvc
+!data/processed/.gitignore
+.venv/
+__pycache__/
+.env
+.DS_Store
