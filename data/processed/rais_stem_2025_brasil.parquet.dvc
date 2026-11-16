@@ -1,0 +1,5 @@
+outs:
+- md5: 9736758f3a0d4570a6547666df680861
+  size: 50384251
+  hash: md5
+  path: rais_stem_2025_brasil.parquet

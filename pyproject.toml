@@ -1,0 +1,16 @@
+[project]
+name = "artemishub-agents"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=3.1.1",
+    "py7zr>=1.1.4",
+    "pyarrow>=26.0.1",
+    "xlrd>=2.0.2",
+]
+
+[dependency-groups]
+dev = [
+    "dvc>=3.67.1",
+    "pytest>=9.2.0",
+]
