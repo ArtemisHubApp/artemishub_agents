@@ -13,4 +13,17 @@ dependencies = [
 dev = [
     "dvc>=3.67.1",
     "pytest>=9.2.0",
+    "ruff>=0.17.5",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = [".claude"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
