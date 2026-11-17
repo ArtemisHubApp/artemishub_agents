@@ -29,7 +29,8 @@ def rodar(df):
 
 
 def test_codigo_recupera_zero_a_esquerda_e_ignora_lixo():
-    assert codigo(pd.Series(["21210", "212405", " 99999", "-1", None]), 6).tolist()[:3] == ["021210", "212405", "099999"]
+    codigos = codigo(pd.Series(["21210", "212405", " 99999", "-1", None]), 6)
+    assert codigos.tolist()[:3] == ["021210", "212405", "099999"]
     assert codigo(pd.Series(["-1"]), 6).isna().all()
 
 

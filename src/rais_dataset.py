@@ -92,8 +92,8 @@ def carregar_stem(caminho=STEM_CBO):
 def nomes_cbo():
     ocupacoes = pd.read_csv(CBO_OCUPACAO, sep=";", encoding="latin-1", dtype=str)
     familias = pd.read_csv(CBO_FAMILIA, sep=";", encoding="latin-1", dtype=str)
-    return (dict(zip(ocupacoes["CODIGO"].str.zfill(6), ocupacoes["TITULO"].str.strip())),
-            dict(zip(familias["CODIGO"].str.zfill(4), familias["TITULO"].str.strip())))
+    return (dict(zip(ocupacoes["CODIGO"].str.zfill(6), ocupacoes["TITULO"].str.strip(), strict=True)),
+            dict(zip(familias["CODIGO"].str.zfill(4), familias["TITULO"].str.strip(), strict=True)))
 
 
 def tratar_bloco(bloco, stem, ano, regiao, contagem, nomes_ocupacao=None, nomes_familia=None):
