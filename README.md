@@ -38,6 +38,8 @@ flowchart LR
     A1 --> LLM[(Provedor de LLM)]
 ```
 
+A arquitetura do primeiro protótipo, as responsabilidades de cada agente e o fluxo de colaboração estão em [docs/multiagentes.md](docs/multiagentes.md).
+
 ## 🛡️ Princípios
 
 - **Respostas fundamentadas:** sempre que possível, citar as fontes recuperadas pelo RAG.
