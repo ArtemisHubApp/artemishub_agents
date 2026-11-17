@@ -55,6 +55,17 @@ A definir pela equipe (framework de agentes e provedor de LLM). As decisões ser
 
 As instruções de instalação e execução serão adicionadas junto com o primeiro scaffold dos agentes.
 
+## 🧠 Desenvolvimento orientado a spec (SDD)
+
+O repositório usa as mesmas skills de agente do [artemishub_rag](https://github.com/ArtemisHubApp/artemishub_rag): o `orchestrator` classifica o tamanho e o risco da mudança e as skills do [superpowers](https://github.com/obra/superpowers) conduzem o fluxo (brainstorming → spec → plano → TDD → revisão). Elas ficam em `.claude/skills/`, com as versões registradas em `skills-lock.json`. Specs e planos vão para `docs/superpowers/`.
+
+Para instalar ou atualizar as skills (via [skills.sh](https://skills.sh)):
+
+```bash
+npx skills add obra/superpowers --skill '*' -a claude-code -y
+npx skills add moonlight-lupin/agent-skills --skill orchestrator -a claude-code -y
+```
+
 ## 📋 Contribuindo
 
 As tarefas são acompanhadas no [kanban do projeto](https://github.com/orgs/ArtemisHubApp/projects). Ao abrir um PR, inclua `Closes #<número>` na descrição para que a issue seja movida automaticamente.
