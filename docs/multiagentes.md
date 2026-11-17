@@ -63,8 +63,31 @@ O LLM nunca calcula números. Valores salariais vêm só da ferramenta de consul
 ### Regras da consulta salarial
 
 - Grupo de comparação: família da CBO (4 dígitos) × UF × sexo, setor privado, RAIS 2025.
-- Amostra mínima por recorte (proposta: 30 vínculos). Abaixo disso a ferramenta não devolve o número, e a resposta diz que não há dados suficientes.
+- Amostra mínima por recorte: 30 vínculos. Abaixo disso a ferramenta não devolve o número.
+- Se a UF não tiver ao menos 30 mulheres e 30 homens na família, a consulta usa o Brasil todo e avisa. Se nem o Brasil tiver, devolve `suficiente: false` e nenhum número.
 - A diferença entre mulheres e homens é **bruta**: compara medianas sem controlar escolaridade, tempo de casa ou jornada. Isso precisa aparecer na resposta. O controle por perfil é papel do modelo salarial (issues #4 e #5, semana 6).
+- Além da mediana geral, a tabela traz a mediana só de quem tem jornada de 40 h ou mais (`p50_tempo_integral`), porque a jornada parcial, mais comum entre mulheres, puxa a mediana para baixo.
+
+### Ferramenta salarial (`src/salarios.py`)
+
+Os agentes não leem o parquet de 50 MB. Uma vez por versão da RAIS, `gerar` agrega o parquet em duas tabelas pequenas, versionadas no git em `data/agregados/`:
+
+| Arquivo | Conteúdo |
+|---|---|
+| `salarios_rais_2025.csv` | n, P25, mediana, P75 e mediana em tempo integral por família da CBO × UF × sexo, incluindo os totais (`uf = BR`, `sexo = todos`) |
+| `ocupacoes_cbo.csv` | ocupações de 6 dígitos com nome oficial e família, para achar a família a partir do que a usuária escreve |
+
+```bash
+uv run python -m src.salarios gerar --ano 2025
+uv run python -m src.salarios consultar --ocupacao "analista de sistemas" --uf DF --salario 7500
+```
+
+O agente de Análise usa duas funções:
+
+- `buscar_ocupacao("analista de sistemas")` devolve as ocupações mais parecidas e suas famílias (no exemplo, família 2124, Analistas de tecnologia da informação).
+- `consultar("2124", "DF", salario=7500)` devolve os números por sexo, a diferença bruta, a posição do salário informado em relação às medianas, a fonte e os avisos que a resposta precisa repetir.
+
+Exemplo real (RAIS 2025, analistas de TI no DF): mediana de R$ 7.000 para mulheres (4.657 vínculos) e R$ 8.462,79 para homens (19.410 vínculos), diferença bruta de 17,3%.
 
 ## Fluxo de interação
 
