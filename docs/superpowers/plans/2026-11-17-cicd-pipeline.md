@@ -105,7 +105,7 @@ jobs:
 
 - [x] **Passo 1:** `ruff format --check` fica de fora por enquanto: `uv run ruff format .` reescreveria 6 dos 10 arquivos (o código usa um estilo mais compacto que o do formatador) e causaria conflito com branches abertas. Adotar depois, num PR só de formatação (`style: aplica ruff format`), combinado com a equipe.
 - [x] **Passo 2:** criar o arquivo acima.
-- [ ] **Passo 3:** abrir o PR e conferir na aba Actions que `lint`, `test (3.12)` e `test (3.13)` ficam verdes.
+- [x] **Passo 3:** abrir o PR e conferir na aba Actions que `lint`, `test (3.12)` e `test (3.13)` ficam verdes.
 - [ ] **Passo 4 (ponto de atenção 1):** num branch descartável, adicionar uma dependência ao `pyproject.toml` sem atualizar o lock e confirmar que `uv sync --locked` falha. Apagar o branch.
 - [ ] **Passo 5:** commit `ci: lint e testes com uv em Python 3.12 e 3.13`.
 
@@ -119,23 +119,38 @@ jobs:
 - [ ] **Passo 1:** `dependabot.yml` com dois ecossistemas, ambos semanais: `github-actions` (diretório `/`) e `uv` (diretório `/`).
 - [ ] **Passo 2:** template de PR com: o que muda, como testar, `Closes #<número>` (regra do README) e checklist "rodei `uv run pytest` e `uv run ruff check .`".
 - [ ] **Passo 3:** job `security` no `ci.yml`: gitleaks para segredos commitados (em repositório de organização, a `gitleaks-action@v2` exige a licença gratuita em `secrets.GITLEAKS_LICENSE`; a alternativa sem licença é rodar o binário do gitleaks direto, com `gitleaks git --redact`) e `uvx pip-audit` sobre as dependências exportadas (`uv export --no-hashes > req.txt && uvx pip-audit -r req.txt`).
-- [ ] **Passo 4:** na proteção da `main` (Settings → Branches, quem tem admin no repositório): exigir PR, exigir os checks `lint`, `test (3.12)`, `test (3.13)` e `security`, e bloquear push direto.
+- [x] **Passo 4:** ruleset `main` ativo (#33): bloqueia apagar a branch e force push, exige PR (0 aprovações) e os checks `lint`, `test (3.12)` e `test (3.13)`. Quando o job `security` existir, adicioná-lo aos checks obrigatórios em Settings → Rules → Rulesets → `main`.
 - [ ] **Passo 5:** commit `ci: dependabot, template de PR e checagem de segurança`.
 
 ## Fase 2: dados versionados (depende de decisão da equipe)
 
 ### Tarefa 4: remote do DVC e checagem das tabelas agregadas
 
-**Decisão pendente (Engenharia de Dados / DevOps):** onde fica o remote do DVC. Opções que funcionam no CI: bucket S3 ou GCS com credencial em `secrets`, ou Google Drive com conta de serviço. Sem remote, nenhum outro computador (nem o CI) consegue baixar o parquet.
+**Decisão (17/11/2026):** o remote do DVC é o **DagsHub** (plano gratuito, 10 GB, sem cartão). Ele foi feito para DVC, cada pessoa usa o próprio login e o CI só precisa de um token. Alternativas avaliadas: Google Drive (conta de serviço não tem cota, então não consegue fazer `dvc push`), Cloudflare R2 e S3/GCS (pedem cartão). Hoje `.dvc/config` está vazio: sem remote, nenhum outro computador (nem o CI) consegue baixar o parquet.
+
+**Responsável:** Camila (Engenharia de Dados · DevOps).
 
 **Arquivos:**
-- Modificar: `.dvc/config` (remote padrão)
+- Modificar: `.dvc/config` (remote padrão, só a URL)
+- Modificar: `README.md` (como baixar os dados)
 - Criar: `.github/workflows/data.yml`
 
-- [ ] **Passo 1:** `uv run dvc remote add -d storage <url>` e `uv run dvc push`. Conferir em outra máquina com `uv run dvc pull`.
-- [ ] **Passo 2:** `data.yml` roda só quando mudam `src/salarios.py`, `src/rais_*.py`, `data/**` ou `config/**` (filtro `paths`), e também por `workflow_dispatch`.
-- [ ] **Passo 3 (ponto de atenção 3):** passos do job: `uv run dvc pull data/processed/rais_stem_2025_brasil.parquet.dvc`, depois `uv run python -m src.salarios gerar --ano 2025`, depois `git diff --exit-code data/agregados/`. Esperado: sem diferença. Se houver, o job falha com a mensagem "rode `python -m src.salarios gerar` e commite `data/agregados/`".
-- [ ] **Passo 4:** commit `ci: confere se as tabelas agregadas batem com o parquet do DVC`.
+- [ ] **Passo 1:** no DagsHub, criar o repositório conectado ao GitHub (New Repository → Connect a repository → GitHub → `ArtemisHubApp/artemishub_agents`) e dar acesso de escrita a quem roda o pipeline da RAIS.
+- [ ] **Passo 2:** configurar o remote. A URL vai para o git e o login fica em `.dvc/config.local`, que não é commitado:
+
+```bash
+uv run dvc remote add -d origin https://dagshub.com/<dono>/artemishub_agents.dvc
+uv run dvc remote modify origin --local auth basic
+uv run dvc remote modify origin --local user <usuario-dagshub>
+uv run dvc remote modify origin --local password <token-dagshub>
+uv run dvc push
+```
+
+- [ ] **Passo 3:** conferir de outra máquina (ou de um clone limpo) com `uv run dvc pull`. Esperado: `data/processed/rais_stem_2025_brasil.parquet` com o md5 `9736758f3a0d4570a6547666df680861` do `.dvc`.
+- [ ] **Passo 4:** criar um token só de leitura para o CI e salvar como `secrets.DAGSHUB_USER` e `secrets.DAGSHUB_TOKEN` no repositório; documentar no README o `dvc pull` para a equipe.
+- [ ] **Passo 5:** `data.yml` roda só quando mudam `src/salarios.py`, `src/rais_*.py`, `data/**` ou `config/**` (filtro `paths`), e também por `workflow_dispatch`.
+- [ ] **Passo 6 (ponto de atenção 3):** passos do job: configurar o login com `uv run dvc remote modify origin --local user/password` a partir dos `secrets`, depois `uv run dvc pull data/processed/rais_stem_2025_brasil.parquet.dvc`, depois `uv run python -m src.salarios gerar --ano 2025`, depois `git diff --exit-code data/agregados/`. Esperado: sem diferença. Se houver, o job falha com a mensagem "rode `python -m src.salarios gerar` e commite `data/agregados/`".
+- [ ] **Passo 7:** commit `ci: confere se as tabelas agregadas batem com o parquet do DVC`.
 
 ## Fase 3: avaliação dos agentes (semanas 4 e 5)
 
@@ -178,6 +193,6 @@ Entra junto com o código de `src/agents/`. Não muda o workflow: os testes fica
 | Fase | Quando | Bloqueio |
 |---|---|---|
 | 1 (Tarefas 1 a 3) | já | nenhum |
-| 2 (Tarefa 4) | semana 4 | escolher o remote do DVC |
+| 2 (Tarefa 4) | semana 4 | nenhum: remote definido (DagsHub), implementação com a Camila |
 | 3 (Tarefas 5 e 6) | semanas 4 e 5 | código de `src/agents/`; chave do LLM em `secrets` |
 | 4 (Tarefa 7) | semana 6 | orquestrador exposto como API; ADR de deploy |
