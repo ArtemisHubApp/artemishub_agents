@@ -350,3 +350,21 @@ def test_validacao_junta_linha_quebrada_no_meio_da_frase():
 @pytest.mark.parametrize("texto", ["igualdade [Fonte 1; Fonte 2].", "igualdade [FONTE 1 e FONTE 2]."])
 def test_normalizar_citacoes_com_ponto_e_virgula_e_e(texto):
     assert normalizar_citacoes(texto) == "igualdade [FONTE 1] [FONTE 2]."
+
+
+def test_prompt_pede_resposta_curta_sem_repetir_avisos():
+    sistema = montar_mensagens(_pedido())[0]["content"]
+    assert "no máximo 3 parágrafos curtos" in sistema
+    assert "não repita os avisos" in sistema.lower()
+
+
+def test_prompt_usa_o_nome_da_ocupacao_perguntada():
+    pedido = PedidoDeRascunho(PERGUNTA_DEMO, Intencao(True, False),
+                              Parametros("cientista dados", "2112", "Profissionais de estatística e afins", "BR", None,
+                                         ocupacao="Cientista de dados"),
+                              DADOS, [])
+    assert "Cientista de dados" in montar_mensagens(pedido)[1]["content"]
+
+
+def test_prompt_nao_atribui_a_mediana_a_usuaria():
+    assert "não diga que é o salário dela" in montar_mensagens(_pedido())[0]["content"]

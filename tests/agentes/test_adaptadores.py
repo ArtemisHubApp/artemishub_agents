@@ -119,3 +119,12 @@ def test_redator_de_ambiente_com_chave_usa_o_llm(monkeypatch):
     monkeypatch.setenv("LLM_MODEL", "modelo-de-teste")
     monkeypatch.setenv("LLM_BASE_URL", "https://llm.example/v1")
     assert isinstance(redator_de_ambiente(), RedatorLLM)
+
+
+@pytest.mark.parametrize("termo, familia", [
+    ("cientsita cientsito dados", "2112"),   # erro de digitação de "cientista"
+    ("cientista dados", "2112"),
+    ("analista sistemas", "2124"),
+])
+def test_consulta_rais_corrige_erro_de_digitacao_pelas_palavras_da_cbo(termo, familia):
+    assert ConsultaRais().buscar_ocupacao(termo)[0]["cbo_familia"] == familia

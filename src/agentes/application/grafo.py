@@ -70,16 +70,19 @@ def construir_grafo(
         if bloqueio:
             return {"bloqueio": bloqueio, "passos": ["orquestrador: pergunta bloqueada pelo guardrail"]}
         intencao = interpretar(pergunta)
-        termo, familia, nome = termo_de_ocupacao(pergunta), None, None
+        termo, familia, nome, ocupacao = termo_de_ocupacao(pergunta), None, None, None
         if intencao.salario:
             achadas = consulta.buscar_ocupacao(termo)
             if achadas:
                 familia, nome = achadas[0]["cbo_familia"], achadas[0]["cbo_familia_nome"]
-        parametros = Parametros(termo, familia, nome, extrair_uf(pergunta) or "BR", extrair_salario(pergunta))
+                ocupacao = achadas[0]["cbo_nome"]
+        parametros = Parametros(termo, familia, nome, extrair_uf(pergunta) or "BR", extrair_salario(pergunta),
+                                ocupacao=ocupacao)
         temas = [t for t, pedido in (("salário", intencao.salario), ("direitos", intencao.direitos)) if pedido]
         passo = f"orquestrador: intenção {' + '.join(temas) or 'fora de escopo'}"
         if intencao.salario:
-            passo += f"; ocupação {familia or 'não encontrada'} ({nome or termo}), UF {parametros.uf}"
+            familia_texto = f"família {familia}: {nome}" if familia else "família não encontrada"
+            passo += f"; ocupação {ocupacao or termo} ({familia_texto}), UF {parametros.uf}"
         return {"bloqueio": None, "intencao": intencao, "parametros": parametros, "tentativas": 0, "passos": [passo]}
 
     def rotear_entrada(estado: Estado) -> str | list[str]:

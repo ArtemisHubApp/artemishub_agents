@@ -38,6 +38,7 @@ class Parametros:
     cbo_familia_nome: str | None
     uf: str
     salario: float | None
+    ocupacao: str | None = None  # nome da ocupação encontrada na CBO (6 dígitos), para a resposta falar dela
 
 
 @dataclass(frozen=True)
