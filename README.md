@@ -63,7 +63,7 @@ uv run python -m src.agentes.demo    # protótipo multiagente com a pergunta da 
 uv run python -m src.agentes.chat    # conversa com os agentes pelo terminal (/passos, /ajuda, /sair)
 ```
 
-Sem chave de LLM, a Análise usa um rascunho padrão (sem LLM), e sem chaves do Langfuse não há rastreio; a demo roda nos dois casos. Detalhes, fluxo e o que aparece no Langfuse: [docs/multiagentes.md](docs/multiagentes.md).
+O prompt da Análise mora só no Langfuse (`artemis/analise-rascunho`, label `production`), nunca no repo. Por isso o LLM só é usado com as chaves do LLM e do Langfuse; sem elas, a Análise usa um rascunho padrão (sem LLM) e não há rastreio, e a demo roda mesmo assim. Detalhes, fluxo e o que aparece no Langfuse: [docs/multiagentes.md](docs/multiagentes.md).
 
 ## 🧠 Desenvolvimento orientado a spec (SDD)
 
