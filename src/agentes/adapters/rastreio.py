@@ -52,8 +52,11 @@ def _metadata_do_resultado(estado: Estado) -> dict[str, Any]:
 
 
 def rastrear_pergunta(rastreador: LangfuseRastreador | RastreadorNulo, grafo: Any, pergunta: str,
-                      redator: str) -> tuple[Estado, str | None]:
-    """Roda o grafo dentro de um trace `responder-pergunta`: entrada é a pergunta, saída é a resposta final."""
+                      redator: str, sessao: str | None = None) -> tuple[Estado, str | None]:
+    """Roda o grafo dentro de um trace `responder-pergunta`: entrada é a pergunta, saída é a resposta final.
+
+    `sessao` agrupa os traces de uma mesma conversa (chat no terminal) no Sessions view do Langfuse.
+    """
     if not isinstance(rastreador, LangfuseRastreador):
         return responder(grafo, pergunta), None
     from langfuse import propagate_attributes
@@ -62,7 +65,10 @@ def rastrear_pergunta(rastreador: LangfuseRastreador | RastreadorNulo, grafo: An
     cliente = rastreador.cliente
     try:
         with cliente.start_as_current_observation(name=NOME_TRACE, as_type="agent", input=pergunta) as raiz:
-            with propagate_attributes(trace_name=NOME_TRACE, tags=TAGS, metadata={"redator": redator}):
+            atributos: dict[str, Any] = {"trace_name": NOME_TRACE, "tags": TAGS, "metadata": {"redator": redator}}
+            if sessao:
+                atributos["session_id"] = sessao
+            with propagate_attributes(**atributos):
                 estado = responder(grafo, pergunta,
                                    {"callbacks": [CallbackHandler()], "run_name": "fluxo-multiagente"})
             raiz.update(output=estado["resposta_final"], metadata=_metadata_do_resultado(estado))

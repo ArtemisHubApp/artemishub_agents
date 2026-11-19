@@ -60,6 +60,7 @@ uv sync --dev
 cp .env.example .env                 # LLM (Gemini) e Langfuse; opcionais
 uv run pytest -q                     # testes, sem LLM, RAG nem Langfuse
 uv run python -m src.agentes.demo    # protótipo multiagente com a pergunta da demonstração
+uv run python -m src.agentes.chat    # conversa com os agentes pelo terminal (/passos, /ajuda, /sair)
 ```
 
 Sem chave de LLM, a Análise usa um rascunho padrão (sem LLM), e sem chaves do Langfuse não há rastreio; a demo roda nos dois casos. Detalhes, fluxo e o que aparece no Langfuse: [docs/multiagentes.md](docs/multiagentes.md).
