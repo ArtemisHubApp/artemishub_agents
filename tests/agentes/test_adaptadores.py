@@ -11,10 +11,13 @@ from langchain_core.messages import AIMessage
 
 from src.agentes.adapters.llm import RedatorLLM, RedatorPadrao, redator_de_ambiente
 from src.agentes.adapters.rag_subprocesso import MARCADOR, BuscadorRagSubprocesso
+from src.agentes.adapters.rastreio import criar_rastreador, rastrear_pergunta
 from src.agentes.adapters.salarios_rais import ConsultaRais
-from src.agentes.application.portas import FonteIndisponivel
+from src.agentes.application.grafo import construir_grafo
+from src.agentes.application.portas import FonteIndisponivel, RastreadorNulo
 from src.agentes.domain.modelos import Evidencia, Intencao, Parametros, PedidoDeRascunho
-from tests.agentes.test_dominio import DADOS, EVIDENCIAS
+from tests.agentes.test_dominio import DADOS, EVIDENCIAS, PERGUNTA_DEMO
+from tests.agentes.test_grafo import BuscadorFake, ConsultaFake, RedatorFake
 
 ACHADO = {"id": "FONTE 1", "titulo": "Lei 14.611/2023", "url": "https://planalto.gov.br/l14611", "pagina": None,
           "artigo": "art. 2", "texto": "A igualdade salarial..."}
@@ -100,6 +103,15 @@ def test_redator_llm_usa_o_rascunho_padrao_se_o_provedor_falhar():
 def test_redator_de_ambiente_sem_chave_e_o_padrao(monkeypatch):
     monkeypatch.delenv("LLM_API_KEY", raising=False)
     assert isinstance(redator_de_ambiente(), RedatorPadrao)
+
+
+def test_sem_chaves_do_langfuse_o_rastreio_e_nulo_e_o_fluxo_roda(monkeypatch):
+    monkeypatch.delenv("LANGFUSE_PUBLIC_KEY", raising=False)
+    rastreador = criar_rastreador()
+    assert isinstance(rastreador, RastreadorNulo)
+    grafo = construir_grafo(BuscadorFake(), ConsultaFake(), RedatorFake(), rastreador)
+    estado, link = rastrear_pergunta(rastreador, grafo, PERGUNTA_DEMO, redator="RedatorFake")
+    assert link is None and estado["validacao"].aprovado
 
 
 def test_redator_de_ambiente_com_chave_usa_o_llm(monkeypatch):

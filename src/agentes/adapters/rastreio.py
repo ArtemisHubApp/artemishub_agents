@@ -10,6 +10,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
 
+from src.agentes.application.grafo import Estado, responder
 from src.agentes.application.portas import Etapa, RastreadorNulo
 
 NOME_TRACE = "responder-pergunta"
@@ -36,6 +37,36 @@ class LangfuseRastreador:
     def etapa(self, nome: str, tipo: str, entrada: Any) -> Iterator[Etapa]:
         with self.cliente.start_as_current_observation(name=nome, as_type=tipo, input=entrada) as observacao:
             yield _EtapaLangfuse(observacao)
+
+
+def _metadata_do_resultado(estado: Estado) -> dict[str, Any]:
+    validacao = estado.get("validacao")
+    return {
+        "aprovado": bool(validacao and validacao.aprovado),
+        "motivo_reprovacao": validacao.motivo if validacao and not validacao.aprovado else None,
+        "tentativas": estado.get("tentativas", 0),
+        "bloqueada": bool(estado.get("bloqueio")),
+        "evidencias": len(estado.get("evidencias", [])),
+        "falha_pesquisa": estado.get("falha_pesquisa"),
+    }
+
+
+def rastrear_pergunta(rastreador: LangfuseRastreador | RastreadorNulo, grafo: Any, pergunta: str,
+                      redator: str) -> tuple[Estado, str | None]:
+    """Roda o grafo dentro de um trace `responder-pergunta`: entrada é a pergunta, saída é a resposta final."""
+    if not isinstance(rastreador, LangfuseRastreador):
+        return responder(grafo, pergunta), None
+    from langfuse import propagate_attributes
+    from langfuse.langchain import CallbackHandler
+
+    cliente = rastreador.cliente
+    with cliente.start_as_current_observation(name=NOME_TRACE, as_type="agent", input=pergunta) as raiz:
+        with propagate_attributes(trace_name=NOME_TRACE, tags=TAGS, metadata={"redator": redator}):
+            estado = responder(grafo, pergunta, {"callbacks": [CallbackHandler()], "run_name": "fluxo-multiagente"})
+        raiz.update(output=estado["resposta_final"], metadata=_metadata_do_resultado(estado))
+        link = cliente.get_trace_url(trace_id=raiz.trace_id)
+    cliente.flush()
+    return estado, link
 
 
 def criar_rastreador() -> LangfuseRastreador | RastreadorNulo:
