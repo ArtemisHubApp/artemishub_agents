@@ -165,7 +165,9 @@ Para testar várias perguntas sem remontar os agentes a cada uma, use o chat no 
 uv run python -m src.agentes.chat
 ```
 
-`/passos` liga e desliga o passo a passo de cada agente, `/ajuda` mostra os comandos e `/sair` (ou Ctrl+D) encerra. Cada pergunta é respondida sozinha, sem memória da conversa, como no protótipo. No Langfuse, cada pergunta é um trace e a conversa inteira é uma sessão (`chat-…`), visível na tela Sessions.
+`/passos` liga e desliga o passo a passo de cada agente, `/esquecer` apaga a memória da conversa, `/ajuda` mostra os comandos e `/sair` (ou Ctrl+D) encerra.
+
+**Memória da conversa:** o chat lembra só a intenção, a ocupação (família da CBO) e a UF da última pergunta atendida, para que "e no DF?" ou "e quanto ganha uma analista de sistemas?" continuem o assunto. Não guarda o valor do salário, o sexo, a raça nem a origem, e não envia histórico ao LLM: memória com dados pessoais é vetor de viés em conselhos salariais (relatório de vieses). A memória dura só enquanto o chat está aberto (porta `MemoriaDaConversa`, adaptador `MemoriaEmProcesso`); guardar conversas no Postgres depende da arquitetura do backend e da decisão de LGPD. No Langfuse, cada pergunta é um trace e a conversa inteira é uma sessão (`chat-…`), visível na tela Sessions.
 
 Pré-requisito: o índice do `artemishub_rag` publicado (`uv run python -m src.pipeline` no rag). A Pesquisa roda o Retriever do rag no ambiente dele (`uv run --project`), porque os dois repos usam o pacote `src` (troca para import quando a rag#23 sair). Numa worktree, aponte `ARTEMIS_RAG_DIR` para o rag.
 
