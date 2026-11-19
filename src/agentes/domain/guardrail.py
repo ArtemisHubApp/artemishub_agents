@@ -13,14 +13,19 @@ MSG_INJECAO = (
     "Posso ajudar com dúvidas sobre salário em carreiras STEM e sobre seus direitos no trabalho."
 )
 
-# Padrões de quem tenta trocar as regras do sistema em vez de perguntar algo.
+# Padrões de quem tenta trocar as regras do sistema em vez de perguntar algo. O comando precisa ser dirigido
+# ao sistema (imperativo + "instruções", ou "regras anteriores/do sistema"): "empresas podem ignorar as regras
+# da lei?" é pergunta de direitos e não pode ser bloqueada.
+_ALVO = (
+    r"(todas\s+)?(as\s+|suas\s+|tuas\s+|os\s+|seus\s+)?"
+    r"(instru[çc]|orienta[çc]|comandos|regras\s+(anteriores|acima|do\s+sistema))"
+)
 _INJECAO = re.compile(
-    r"ignor[ea]\w*\s+(as\s+|todas\s+as\s+|suas\s+|os\s+)?(instru|regras|orienta)"
-    r"|esque[çc]\w*\s+(as\s+|todas\s+as\s+|suas\s+)?(instru|regras)"
-    r"|\b(system|developer)\s+prompt"
-    r"|voc[êe]\s+agora\s+[ée]"
-    r"|a\s+partir\s+de\s+agora\s+voc[êe]"
-    r"|ignore\s+(all\s+)?(previous|prior)\s+instructions"
+    rf"\b(ignore|ignora|desconsidere|desconsidera|esque[çc]a|esquece|descarte)\s+{_ALVO}"
+    r"|\b(system|developer)\s+prompt|\bprompt\s+(do|de)\s+sistema"
+    r"|voc[êe]\s+agora\s+[ée]|a\s+partir\s+de\s+agora\s+voc[êe]"
+    r"|\bfinja\s+(que|ser)\b|\baja\s+como\b|\bmodo\s+desenvolvedor|\bDAN\b"
+    r"|\bignore\s+(all\s+|your\s+|the\s+)?(previous\s+|prior\s+)?instructions"
     r"|jailbreak",
     re.IGNORECASE,
 )
