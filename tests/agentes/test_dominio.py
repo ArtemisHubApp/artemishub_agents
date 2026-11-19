@@ -323,3 +323,30 @@ def test_resposta_lista_fonte_citada_com_zero_a_esquerda_depois_de_normalizar():
     texto = normalizar_citacoes("A lei garante igualdade [FONTE 01].")
     assert "FONTE 1: Lei 14.611/2023" in formatar_resposta(texto, EVIDENCIAS, None)
 
+
+
+# segunda revisão: sem falso positivo nas frases corretas
+
+
+@pytest.mark.parametrize("frase", [
+    "As mulheres ganham menos e os homens ganham mais, uma diferença bruta de 17,3% [RAIS].",
+    "As mulheres recebem menos, enquanto os homens recebem mais; a diferença bruta é de 17,3% [RAIS].",
+    "Os homens ganham mais que as mulheres, que ganham menos: diferença bruta de 17,3% [RAIS].",
+])
+def test_validacao_aceita_frase_correta_sobre_o_sentido(frase):
+    assert validar(frase, EVIDENCIAS, DADOS).aprovado
+
+
+@pytest.mark.parametrize("prefixo", ["**Resumo:**\n", "**Resumo**\n", "---\n"])
+def test_validacao_ignora_cabecalho_em_negrito_e_separador(prefixo):
+    assert validar(prefixo + BOM, EVIDENCIAS, DADOS).aprovado
+
+
+def test_validacao_junta_linha_quebrada_no_meio_da_frase():
+    texto = "A mediana das mulheres é R$ 7.000,00, uma diferença\nbruta de 17,3% em relação aos homens [RAIS]."
+    assert validar(texto, EVIDENCIAS, DADOS).aprovado
+
+
+@pytest.mark.parametrize("texto", ["igualdade [Fonte 1; Fonte 2].", "igualdade [FONTE 1 e FONTE 2]."])
+def test_normalizar_citacoes_com_ponto_e_virgula_e_e(texto):
+    assert normalizar_citacoes(texto) == "igualdade [FONTE 1] [FONTE 2]."

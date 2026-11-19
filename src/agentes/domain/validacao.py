@@ -10,7 +10,7 @@ from src.agentes.domain.modelos import DadosSalariais, Evidencia, Validacao
 CITACAO = re.compile(r"\[(FONTE\s+\d+|RAIS)\]")
 _FONTE = re.compile(r"\[FONTE\s+(\d+)\]")
 # "[FONTE 1, FONTE 2]", "[Fonte 1, 2]", "[fonte 01]" e "[rais]", como os LLMs escrevem na prática.
-_CITACAO_SOLTA = re.compile(r"\[\s*fonte\s+(\d+(?:\s*,\s*(?:fonte\s+)?\d+)*)\s*\]", re.IGNORECASE)
+_CITACAO_SOLTA = re.compile(r"\[\s*fonte\s+(\d+(?:(?:\s*[,;]\s*|\s+e\s+)(?:fonte\s+)?\d+)*)\s*\]", re.IGNORECASE)
 _RAIS_SOLTA = re.compile(r"\[\s*rais\s*\]", re.IGNORECASE)
 
 _NUMERO = r"(\d{1,3}(?:[.\s]\d{3})+|\d+)(?:,(\d{1,2}))?"
@@ -18,12 +18,15 @@ _NUMERO = r"(\d{1,3}(?:[.\s]\d{3})+|\d+)(?:,(\d{1,2}))?"
 _REAIS = re.compile(rf"R\$\s?{_NUMERO}(\s+mil\b)?|\b{_NUMERO}(\s+mil)?\s+reais\b", re.IGNORECASE)
 # "17,3%", "17.3%", "25 por cento"
 _PERCENTUAL = re.compile(r"(\d+(?:[.,]\d+)?)\s?(?:%|por\s+cento\b)", re.IGNORECASE)
-# Título markdown ou linha curta de abertura ("Resumo:") não precisam de citação.
-_TITULO = re.compile(r"^\s*(#{1,6}\s.*|[^\[\]]{1,60}:\s*)$")
-# Diferença no sentido contrário ao dos dados (mulheres ganham menos).
+# Título markdown, cabeçalho em negrito, linha curta de abertura ("Resumo:"), separador ou marcador vazio.
+_TITULO = re.compile(r"^\s*(#{1,6}\s.*|\*\*[^*\[\]]{1,60}\*\*:?|[^\[\]]{1,60}:|[-*_]{3,}|[-*•])\s*$")
+_FIM_DE_FRASE = re.compile(r"[.!?:;\]]\s*$")
+# Diferença no sentido contrário ao dos dados (mulheres ganham menos). O verbo vem logo depois do sujeito,
+# para não confundir "as mulheres ganham menos e os homens ganham mais" (correto) com a inversão.
 _SENTIDO_INVERTIDO = re.compile(
-    r"mulheres[^.]{0,60}\b(ganham\s+mais|recebem\s+mais|acima\s+dos?\s+homens|mais\s+(que|do\s+que)\s+(os\s+)?homens)"
-    r"|homens[^.]{0,40}\b(ganham|recebem)\s+[^.]{0,20}\bmenos\b",
+    r"\bmulheres\s+(ganham|recebem)\s+(mais|[\d.,]+\s*%\s+a\s+mais)\b"
+    r"|\bmulheres\s+(ganham|recebem|est[aã]o)\s+[^.,;]{0,30}\bacima\s+d[oa]s?\s+(dos\s+)?homens"
+    r"|\bhomens\s+(ganham|recebem)\s+([\d.,]+\s*%\s+)?menos\b",
     re.IGNORECASE,
 )
 
@@ -55,7 +58,19 @@ def _percentuais(texto: str) -> list[tuple[str, float]]:
 
 
 def _linhas(texto: str) -> list[str]:
-    return [linha for linha in texto.strip().splitlines() if linha.strip() and not _TITULO.match(linha)]
+    """Trechos que precisam de citação: cada linha, juntando a que foi quebrada no meio da frase."""
+    trechos: list[str] = []
+    continua = False
+    for linha in texto.strip().splitlines():
+        if not linha.strip() or _TITULO.match(linha):
+            continua = False
+            continue
+        if continua:
+            trechos[-1] += " " + linha.strip()
+        else:
+            trechos.append(linha.strip())
+        continua = not _FIM_DE_FRASE.search(linha)
+    return trechos
 
 
 def validar(rascunho: str, evidencias: list[Evidencia], dados: DadosSalariais | None) -> Validacao:
