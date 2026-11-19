@@ -23,3 +23,13 @@ def test_guardrail_nao_bloqueia_pergunta_legitima_sobre_regras(pergunta):
 ])
 def test_guardrail_bloqueia_desvios_comuns(pergunta):
     assert verificar_entrada(pergunta) == MSG_INJECAO
+
+
+@pytest.mark.parametrize("pergunta", [
+    "A empresa ignora as orientações do MTE?",
+    "Meu chefe ignora as orientações sobre igualdade, o que fazer?",
+    "Minha empresa ignora as instruções de segurança, tenho direitos?",
+    "Dan ganha quanto como analista?",
+])
+def test_guardrail_nao_bloqueia_terceira_pessoa_nem_nome(pergunta):
+    assert verificar_entrada(pergunta) is None

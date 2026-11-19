@@ -21,10 +21,10 @@ _ALVO = (
     r"(instru[çc]|orienta[çc]|comandos|regras\s+(anteriores|acima|do\s+sistema))"
 )
 _INJECAO = re.compile(
-    rf"\b(ignore|ignora|desconsidere|desconsidera|esque[çc]a|esquece|descarte)\s+{_ALVO}"
+    rf"\b(ignore|desconsidere|esque[çc]a|descarte)\s+{_ALVO}"  # imperativo: "a empresa ignora as orientações" passa
     r"|\b(system|developer)\s+prompt|\bprompt\s+(do|de)\s+sistema"
     r"|voc[êe]\s+agora\s+[ée]|a\s+partir\s+de\s+agora\s+voc[êe]"
-    r"|\bfinja\s+(que|ser)\b|\baja\s+como\b|\bmodo\s+desenvolvedor|\bDAN\b"
+    r"|\bfinja\s+(que|ser)\b|\baja\s+como\b|\bmodo\s+desenvolvedor|(?-i:\bDAN\b)"
     r"|\bignore\s+(all\s+|your\s+|the\s+)?(previous\s+|prior\s+)?instructions"
     r"|jailbreak",
     re.IGNORECASE,
