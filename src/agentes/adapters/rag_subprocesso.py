@@ -21,20 +21,28 @@ MARCADOR = "ARTEMIS_EVIDENCIAS "
 TIMEOUT_SEGUNDOS = 180
 
 # Roda dentro do artemishub_rag. Lê {tema, top_k, parcial} do stdin e imprime uma linha marcada com o JSON.
+# Usa a API pública `artemis_rag.buscar` (artemishub_rag#27) e, no layout antigo (pacote `src`), o Retriever.
 _SCRIPT = f"""
 import json, sys
-from src.query import Retriever
 pedido = json.load(sys.stdin)
-hits = Retriever(allow_partial=pedido["parcial"]).retrieve(pedido["tema"], pedido["top_k"])
-saida = []
-for i, hit in enumerate(hits, 1):
-    meta = hit["metadata"]
-    origem = meta.get("metadata") or {{}}
-    if isinstance(origem, str):
-        origem = json.loads(origem)
-    saida.append({{"id": f"FONTE {{i}}", "titulo": meta.get("title") or "", "url": meta.get("source_url") or "",
-                  "pagina": str(meta["page"]) if meta.get("page") else None,
-                  "artigo": origem.get("article"), "texto": hit["text"]}})
+campos = ("id", "titulo", "url", "pagina", "artigo", "texto")
+try:
+    from artemis_rag import buscar
+except ImportError:
+    from src.query import Retriever
+    hits = Retriever(allow_partial=pedido["parcial"]).retrieve(pedido["tema"], pedido["top_k"])
+    saida = []
+    for i, hit in enumerate(hits, 1):
+        meta = hit["metadata"]
+        origem = meta.get("metadata") or {{}}
+        if isinstance(origem, str):
+            origem = json.loads(origem)
+        saida.append({{"id": f"FONTE {{i}}", "titulo": meta.get("title") or "", "url": meta.get("source_url") or "",
+                      "pagina": str(meta["page"]) if meta.get("page") else None,
+                      "artigo": origem.get("article"), "texto": hit["text"]}})
+else:
+    evidencias = buscar(pedido["tema"], pedido["top_k"], parcial=pedido["parcial"])
+    saida = [{{c: getattr(e, c) for c in campos}} for e in evidencias]
 print({MARCADOR!r} + json.dumps(saida, ensure_ascii=False))
 """
 
