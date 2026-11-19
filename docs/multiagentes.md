@@ -183,6 +183,7 @@ Os nomes são estáveis: filtros, dashboards e avaliadores dependem deles.
 - **Valores das evidências:** um valor em R$ ou percentual que aparece em qualquer trecho recuperado é aceito em qualquer parágrafo, mesmo que aquele trecho não seja citado ali.
 - **Ocupação:** `buscar_ocupacao` acha a ocupação por palavras do nome na CBO. Termos que não estão nos nomes oficiais ("engenheira de software") podem cair numa ocupação parecida; o passo a passo mostra qual família foi usada.
 - **Guardrail:** é uma lista de padrões, não um classificador. Tentativas de injeção reescritas podem passar; a defesa é em camadas (dados entre delimitadores, roteamento em código e Validação).
+- **Latência:** medida em 19/11 com cache quente, a pergunta da demonstração leva cerca de 25 s: o Gemini (`gemini-3.5-flash-lite`) leva 13 s e a busca no RAG 6,5 s, porque o subprocesso carrega o modelo de embeddings a cada pergunta. Pergunta só de salário leva cerca de 11 s. A primeira execução da máquina leva mais de 1 minuto (download e carga do modelo). A meta do PDR é de até 10 s: o import direto do RAG (#37) e uma API que mantém o modelo carregado (#36) devem resolver a parte do RAG.
 - **Delimitadores do prompt:** um trecho do RAG que contenha `</evidencias>` fecha a tag antes da hora.
 
 ## Próximas etapas
