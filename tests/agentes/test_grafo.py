@@ -117,3 +117,11 @@ def test_ocupacao_desconhecida_nao_inventa_numero():
     estado, _, consulta, _ = _rodar("Quanto ganha uma astronauta no DF e quais são meus direitos?")
     assert consulta.consultas == [] and estado["dados_salariais"] is None
     assert "R$" not in estado["resposta_final"]
+
+
+def test_citacao_combinada_do_llm_e_normalizada_e_aparece_nas_fontes():
+    texto = ("A mediana das mulheres é R$ 7.000,00 e a dos homens R$ 8.462,79, diferença bruta de 17,3% [rais].\n\n"
+             "A lei garante igualdade salarial [Fonte 1, 2].")
+    estado, *_ = _rodar(PERGUNTA_DEMO, redator=RedatorFake(texto))
+    assert estado["validacao"].aprovado and estado["tentativas"] == 1
+    assert "[FONTE 1] [FONTE 2]" in estado["resposta_final"] and "- FONTE 2: CLT" in estado["resposta_final"]

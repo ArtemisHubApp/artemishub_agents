@@ -8,7 +8,7 @@ from src.agentes.domain.intencao import extrair_salario, extrair_uf, interpretar
 from src.agentes.domain.modelos import Evidencia, Intencao, Parametros, PedidoDeRascunho
 from src.agentes.domain.rascunho import montar_mensagens, rascunho_padrao
 from src.agentes.domain.resposta import MSG_FORA_DE_ESCOPO, formatar_abstencao, formatar_resposta
-from src.agentes.domain.validacao import validar
+from src.agentes.domain.validacao import normalizar_citacoes, validar
 
 PERGUNTA_DEMO = "Quanto ganha uma analista de sistemas no DF, qual a diferença para homens e quais são meus direitos?"
 
@@ -265,3 +265,61 @@ def test_abstencao_explica_e_lista_o_que_foi_encontrado():
 
 def test_mensagem_de_fora_de_escopo_cita_os_temas():
     assert "salário" in MSG_FORA_DE_ESCOPO and "direitos" in MSG_FORA_DE_ESCOPO
+
+
+# revisão final: formatos reais de LLM (Validação)
+
+
+@pytest.mark.parametrize("trecho", ["9.999 reais", "R$ 9 mil", "9 mil reais", "R$ 9.999", "R$ 9 999,00"])
+def test_validacao_reprova_valor_inventado_em_qualquer_formato(trecho):
+    resultado = validar(BOM.replace("R$ 8.462,79", trecho), EVIDENCIAS, DADOS)
+    assert not resultado.aprovado and "valor" in resultado.motivo
+
+
+@pytest.mark.parametrize("trecho", ["7.000 reais", "R$ 7 mil", "7 mil reais", "R$ 7.000"])
+def test_validacao_aceita_valor_certo_escrito_de_outro_jeito(trecho):
+    assert validar(BOM.replace("R$ 7.000,00", trecho), EVIDENCIAS, DADOS).aprovado
+
+
+@pytest.mark.parametrize("trecho", ["25 por cento", "25%", "17.9%"])
+def test_validacao_reprova_percentual_inventado_em_qualquer_formato(trecho):
+    resultado = validar(BOM.replace("17,3%", trecho), EVIDENCIAS, DADOS)
+    assert not resultado.aprovado and "percentual" in resultado.motivo
+
+
+def test_validacao_aceita_percentual_com_ponto_decimal():
+    assert validar(BOM.replace("17,3%", "17.3%"), EVIDENCIAS, DADOS).aprovado
+
+
+@pytest.mark.parametrize("texto, esperado", [
+    ("igualdade [FONTE 1, FONTE 2].", "igualdade [FONTE 1] [FONTE 2]."),
+    ("igualdade [FONTE 1, 2].", "igualdade [FONTE 1] [FONTE 2]."),
+    ("igualdade [Fonte 01] e [rais].", "igualdade [FONTE 1] e [RAIS]."),
+])
+def test_normalizar_citacoes(texto, esperado):
+    assert normalizar_citacoes(texto) == esperado
+
+
+def test_validacao_ignora_titulos_e_linhas_de_abertura():
+    texto = "## Salários\n\nResumo:\n" + BOM
+    assert validar(texto, EVIDENCIAS, DADOS).aprovado
+
+
+def test_validacao_reprova_linha_sem_citacao_mesmo_sem_linha_em_branco():
+    resultado = validar(BOM + "\nTexto sem citação nenhuma aqui.", EVIDENCIAS, DADOS)
+    assert not resultado.aprovado and "parágrafo 3" in resultado.motivo
+
+
+@pytest.mark.parametrize("frase", [
+    "As mulheres ganham mais que os homens nessa área, diferença bruta de 17,3% [RAIS].",
+    "Os homens ganham 17,3% menos, uma diferença bruta [RAIS].",
+])
+def test_validacao_reprova_diferenca_no_sentido_invertido(frase):
+    resultado = validar(frase, EVIDENCIAS, DADOS)
+    assert not resultado.aprovado and "sentido" in resultado.motivo
+
+
+def test_resposta_lista_fonte_citada_com_zero_a_esquerda_depois_de_normalizar():
+    texto = normalizar_citacoes("A lei garante igualdade [FONTE 01].")
+    assert "FONTE 1: Lei 14.611/2023" in formatar_resposta(texto, EVIDENCIAS, None)
+

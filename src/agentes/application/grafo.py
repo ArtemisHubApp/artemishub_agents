@@ -31,7 +31,7 @@ from src.agentes.domain.modelos import (
     Validacao,
 )
 from src.agentes.domain.resposta import MSG_FORA_DE_ESCOPO, formatar_abstencao, formatar_resposta
-from src.agentes.domain.validacao import validar
+from src.agentes.domain.validacao import normalizar_citacoes, validar
 
 TEMA_IGUALDADE = "igualdade salarial entre mulheres e homens na mesma função"
 TOP_K = 5
@@ -126,7 +126,8 @@ def construir_grafo(
             evidencias=estado.get("evidencias", []),
             motivo_reprovacao=validacao.motivo if validacao and not validacao.aprovado else None,
         )
-        rascunho = redator.redigir(pedido, config)
+        # o texto normalizado é o que a Validação confere e o que vai para a resposta
+        rascunho = normalizar_citacoes(redator.redigir(pedido, config))
         tentativa = estado.get("tentativas", 0) + 1
         return {"rascunho": rascunho, "passos": [f"analise_sintese: rascunho {tentativa} ({len(rascunho)} caracteres)"]}
 
