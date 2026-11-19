@@ -40,11 +40,15 @@ def formatar_resposta(rascunho: str, evidencias: list[Evidencia], dados: DadosSa
     return "\n\n".join(secoes)
 
 
-def formatar_abstencao(motivo: str, evidencias: list[Evidencia], dados: DadosSalariais | None) -> str:
-    """Quando a Validação reprova duas vezes: explica o que faltou e mostra o que foi encontrado."""
+def formatar_abstencao(evidencias: list[Evidencia], dados: DadosSalariais | None) -> str:
+    """Quando a Validação reprova duas vezes: avisa e mostra o que foi encontrado.
+
+    O motivo da reprovação não entra no texto, porque pode repetir o número ou a fonte inventada;
+    ele fica no estado (`validacao`) e no rastreio.
+    """
     secoes = [
-        "Não consegui confirmar todas as informações com segurança "
-        f"(última checagem: {motivo.rstrip('.')}). Para não te passar nada errado, preferi não montar a resposta."
+        "Não consegui confirmar todas as informações com segurança. "
+        "Para não te passar nada errado, preferi não montar a resposta."
     ]
     encontrado = [f"- {_referencia(e)}" for e in evidencias]
     if dados and dados.get("suficiente"):

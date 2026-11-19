@@ -258,9 +258,9 @@ def test_resposta_final_tem_texto_limites_e_so_fontes_citadas():
 
 
 def test_abstencao_explica_e_lista_o_que_foi_encontrado():
-    resposta = formatar_abstencao("valor sem fonte", EVIDENCIAS, DADOS)
-    assert "não consegui confirmar" in resposta.lower() and "valor sem fonte" in resposta
-    assert "FONTE 1" in resposta
+    resposta = formatar_abstencao(EVIDENCIAS, DADOS)
+    assert "não consegui confirmar" in resposta.lower()
+    assert "FONTE 1" in resposta and "RAIS:" in resposta
 
 
 def test_mensagem_de_fora_de_escopo_cita_os_temas():
