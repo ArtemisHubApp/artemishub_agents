@@ -60,12 +60,15 @@ def rastrear_pergunta(rastreador: LangfuseRastreador | RastreadorNulo, grafo: An
     from langfuse.langchain import CallbackHandler
 
     cliente = rastreador.cliente
-    with cliente.start_as_current_observation(name=NOME_TRACE, as_type="agent", input=pergunta) as raiz:
-        with propagate_attributes(trace_name=NOME_TRACE, tags=TAGS, metadata={"redator": redator}):
-            estado = responder(grafo, pergunta, {"callbacks": [CallbackHandler()], "run_name": "fluxo-multiagente"})
-        raiz.update(output=estado["resposta_final"], metadata=_metadata_do_resultado(estado))
-        link = cliente.get_trace_url(trace_id=raiz.trace_id)
-    cliente.flush()
+    try:
+        with cliente.start_as_current_observation(name=NOME_TRACE, as_type="agent", input=pergunta) as raiz:
+            with propagate_attributes(trace_name=NOME_TRACE, tags=TAGS, metadata={"redator": redator}):
+                estado = responder(grafo, pergunta,
+                                   {"callbacks": [CallbackHandler()], "run_name": "fluxo-multiagente"})
+            raiz.update(output=estado["resposta_final"], metadata=_metadata_do_resultado(estado))
+            link = cliente.get_trace_url(trace_id=raiz.trace_id)
+    finally:
+        cliente.flush()  # script curto: sem flush, o trace (inclusive o de erro) não chega ao Langfuse
     return estado, link
 
 
