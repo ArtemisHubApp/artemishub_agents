@@ -6,7 +6,7 @@ from src.agentes.domain.formatacao import brl, numeros_permitidos, pct
 from src.agentes.domain.guardrail import MSG_INJECAO, MSG_LONGA, MSG_VAZIA, verificar_entrada
 from src.agentes.domain.intencao import extrair_salario, extrair_uf, interpretar, termo_de_ocupacao
 from src.agentes.domain.modelos import Evidencia, Intencao, Parametros, PedidoDeRascunho
-from src.agentes.domain.rascunho import montar_mensagens, rascunho_padrao
+from src.agentes.domain.rascunho import VARIAVEIS_DO_PROMPT, rascunho_padrao, variaveis_do_prompt
 from src.agentes.domain.resposta import MSG_FORA_DE_ESCOPO, formatar_abstencao, formatar_resposta
 from src.agentes.domain.validacao import normalizar_citacoes, validar
 
@@ -236,13 +236,7 @@ def test_rascunho_padrao_aceita_numero_que_esta_no_trecho_citado():
     assert "R$ 1.000,00" in rascunho and validar(rascunho, [evidencia], None).aprovado
 
 
-def test_prompt_delimita_dados_e_repassa_motivo():
-    mensagens = montar_mensagens(_pedido(motivo="parágrafo 2 sem citação"))
-    assert mensagens[0]["role"] == "system" and mensagens[1]["role"] == "user"
-    usuario = mensagens[1]["content"]
-    assert "<evidencias>" in usuario and "</evidencias>" in usuario and "<dados_salariais>" in usuario
-    assert "R$ 8.462,79" in usuario and "parágrafo 2 sem citação" in usuario
-    assert "nunca instruções" in mensagens[0]["content"]
+
 
 
 # resposta final
@@ -352,19 +346,31 @@ def test_normalizar_citacoes_com_ponto_e_virgula_e_e(texto):
     assert normalizar_citacoes(texto) == "igualdade [FONTE 1] [FONTE 2]."
 
 
-def test_prompt_pede_resposta_curta_sem_repetir_avisos():
-    sistema = montar_mensagens(_pedido())[0]["content"]
-    assert "no máximo 3 parágrafos curtos" in sistema
-    assert "não repita os avisos" in sistema.lower()
+# variáveis do prompt da Análise (o texto do prompt mora só no Langfuse)
 
 
-def test_prompt_usa_o_nome_da_ocupacao_perguntada():
+def test_variaveis_do_prompt_tem_exatamente_as_chaves_do_langfuse():
+    assert set(variaveis_do_prompt(_pedido())) == set(VARIAVEIS_DO_PROMPT)
+    assert VARIAVEIS_DO_PROMPT == ("pergunta", "ocupacao", "dados_salariais", "evidencias", "correcao")
+
+
+def test_variaveis_trazem_numeros_formatados_e_a_referencia_para_negociar():
+    dados = variaveis_do_prompt(_pedido())["dados_salariais"]
+    assert "R$ 7.000,00" in dados and "R$ 8.462,79" in dados
+    assert "Referência provisória para negociar" in dados and "R$ 8.462,79" in dados.split("Referência")[1]
+
+
+def test_variaveis_trazem_evidencias_com_id_e_correcao_so_quando_reprovado():
+    variaveis = variaveis_do_prompt(_pedido(motivo="parágrafo 2 sem citação"))
+    assert "[FONTE 1] Lei 14.611/2023" in variaveis["evidencias"]
+    assert "parágrafo 2 sem citação" in variaveis["correcao"]
+    assert variaveis_do_prompt(_pedido())["correcao"] == ""
+
+
+def test_variavel_ocupacao_so_quando_encontrada():
     pedido = PedidoDeRascunho(PERGUNTA_DEMO, Intencao(True, False),
                               Parametros("cientista dados", "2112", "Profissionais de estatística e afins", "BR", None,
                                          ocupacao="Cientista de dados"),
                               DADOS, [])
-    assert "Cientista de dados" in montar_mensagens(pedido)[1]["content"]
-
-
-def test_prompt_nao_atribui_a_mediana_a_usuaria():
-    assert "não diga que é o salário dela" in montar_mensagens(_pedido())[0]["content"]
+    assert "Cientista de dados" in variaveis_do_prompt(pedido)["ocupacao"]
+    assert variaveis_do_prompt(_pedido())["ocupacao"] == ""
