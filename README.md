@@ -53,7 +53,28 @@ A definir pela equipe (framework de agentes e provedor de LLM). As decisões ser
 
 ## ▶️ Como executar
 
-As instruções de instalação e execução serão adicionadas junto com o primeiro scaffold dos agentes.
+Com Python 3.12 ou 3.13 e uv, execute `uv sync --locked --dev`. Para rodar os mesmos checks do CI:
+
+```bash
+uv run --locked ruff check .
+uv run --locked pytest -q
+```
+
+### Baixar os dados da RAIS
+
+O remote do DVC fica no DagsHub da equipe. Use a URL do repositório com sufixo `.dvc` e configure o acesso local:
+
+```bash
+uv run --locked dvc remote add --local -d dagshub https://dagshub.com/ORGANIZACAO/REPOSITORIO.dvc
+uv run --locked dvc remote modify --local dagshub auth basic
+uv run --locked dvc remote modify --local dagshub user SEU_USUARIO
+uv run --locked dvc remote modify --local dagshub ask_password true
+uv run --locked dvc pull
+```
+
+Informe o token do DagsHub quando solicitado. A configuração local fica em `.dvc/config.local`, ignorado pelo Git. A consulta salarial usa os agregados que já estão versionados, então baixar o Parquet só é necessário para reconstruí-los ou trabalhar com os dados detalhados.
+
+No GitHub Actions, configure a variável `DAGSHUB_DVC_URL` e os secrets `DAGSHUB_USER` e `DAGSHUB_TOKEN` com acesso de leitura. O workflow **Dados da RAIS** baixa o Parquet e o resumo e verifica se as tabelas de `data/agregados/` podem ser reproduzidas.
 
 ## 🧠 Desenvolvimento orientado a spec (SDD)
 

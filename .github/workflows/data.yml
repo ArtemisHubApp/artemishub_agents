@@ -1,0 +1,54 @@
+name: Dados da RAIS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/data.yml
+      - .dvc/config
+      - .dvcignore
+      - config/**
+      - data/**
+      - src/rais_*.py
+      - src/salarios.py
+      - pyproject.toml
+      - uv.lock
+
+permissions:
+  contents: read
+
+jobs:
+  agregados:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.12"
+      - run: uv sync --locked --dev
+      - name: Baixar artefatos rastreados
+        env:
+          DAGSHUB_DVC_URL: ${{ vars.DAGSHUB_DVC_URL }}
+          DAGSHUB_USER: ${{ secrets.DAGSHUB_USER }}
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          if [[ ! "$DAGSHUB_DVC_URL" =~ ^https://dagshub[.]com/[A-Za-z0-9_.-]+/[A-Za-z0-9_-]+[.]dvc/?$ ]] ||
+             [[ -z "$DAGSHUB_USER" || -z "$DAGSHUB_TOKEN" ]]; then
+            echo "::error::Configure DAGSHUB_DVC_URL, DAGSHUB_USER e DAGSHUB_TOKEN no repositório."
+            exit 1
+          fi
+          trap 'rm -f .dvc/config.local' EXIT
+          uv run --locked dvc remote add --local -d verificacao "$DAGSHUB_DVC_URL"
+          uv run --locked dvc remote modify --local verificacao auth basic
+          uv run --locked dvc remote modify --local verificacao user "$DAGSHUB_USER"
+          uv run --locked dvc remote modify --local verificacao password "$DAGSHUB_TOKEN"
+          uv run --locked dvc pull \
+            data/processed/rais_stem_2025_brasil.parquet.dvc \
+            data/processed/rais_stem_2025_brasil.json.dvc
+      - name: Conferir tabelas agregadas
+        run: |
+          uv run --locked python -m src.salarios gerar --ano 2025
+          git diff --exit-code -- data/agregados/
+          test -z "$(git ls-files --others --exclude-standard -- data/agregados/)"
