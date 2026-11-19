@@ -2,17 +2,17 @@
 
 Documentação do entregável "Primeiro Protótipo Multiagente" (entrega em 20/11/2026): arquitetura dos agentes, responsabilidades e fluxo de colaboração. Segue o escopo do cronograma das semanas 4 a 7.
 
-> **Status:** desenho fechado, implementação em andamento. O framework de orquestração ainda será registrado em ADR no [artemishub_docs](https://github.com/ArtemisHubApp/artemishub_docs) (tarefa 2 do cronograma). Este documento vale para as duas opções em discussão: LangGraph ou orquestrador em Python puro sobre o `llm_client`.
+> **Status:** implementado em 19/11 com LangGraph (ADR-002) e rastreio no Langfuse. Em 19/11 o agente de Comunicação saiu do desenho, por sugestão do professor: o Orquestrador formata a resposta final, sem mais uma chamada ao LLM (ADR-011 no [artemishub_docs](https://github.com/ArtemisHubApp/artemishub_docs)). Spec: `docs/superpowers/specs/2026-11-19-prototipo-multiagente-design.md`.
 
 ## Objetivo do protótipo
 
-Cinco agentes respondem juntos a uma pergunta que cruza as duas bases do Artemis: os dados salariais da RAIS e a base de direitos do RAG.
+Quatro agentes respondem juntos a uma pergunta que cruza as duas bases do Artemis: os dados salariais da RAIS e a base de direitos do RAG.
 
 Pergunta principal da demonstração:
 
 > "Quanto ganha uma analista de sistemas no DF, qual a diferença para homens e quais são meus direitos?"
 
-O enunciado pede no mínimo 2 agentes especializados. O protótipo tem 4 especialistas, um para cada papel citado no enunciado (Research, Analysis, Validation e Communication), mais o Orquestrador.
+O enunciado pede no mínimo 2 agentes especializados. O protótipo tem 3 especialistas (Research, Analysis e Validation) mais o Orquestrador, que também cumpre o papel de Communication: monta a resposta final por um template, sem chamar o LLM de novo. Assim cada pergunta usa **uma** chamada ao LLM (duas, se a Validação reprovar).
 
 ## Arquitetura
 
@@ -25,25 +25,24 @@ flowchart TB
         PES["Pesquisa<br/>(Research Agent)"]
         ANA["Análise<br/>(Analysis Agent)"]
         VAL["Validação<br/>(Validation Agent)"]
-        COM["Comunicação<br/>(Communication Agent)"]
 
         ORQ -->|em paralelo| PES
         ORQ -->|em paralelo| ANA
         PES --> VAL
         ANA --> VAL
         VAL -->|reprovado: motivo exato| ORQ
-        VAL -->|aprovado| COM
+        VAL -->|aprovado: Orquestrador formata| ORQ
     end
 
     PES -.->|retrieve| RAG[("artemishub_rag<br/>busca híbrida com citações")]
     ANA -.->|consulta| RAIS[("Medianas RAIS STEM 2025<br/>por CBO, UF e sexo")]
     ORQ -.-> LLM[("LLM<br/>Gemini via API compatível OpenAI")]
-    COM --> R([Resposta com citações e fontes])
+    ORQ --> R([Resposta com citações e fontes])
 ```
 
 | Camada | Onde fica | Papel |
 |---|---|---|
-| Agentes | este repositório, `src/agents/` | orquestração e os quatro especialistas |
+| Agentes | este repositório, `src/agentes/` (`domain`, `application`, `adapters`) | orquestração e os três especialistas |
 | Base de direitos | [artemishub_rag](https://github.com/ArtemisHubApp/artemishub_rag) | busca híbrida (vetorial + BM25) e validação de citações |
 | Dados salariais | `data/processed/rais_stem_2025_brasil.parquet` (DVC) | origem das medianas e percentis; ver [dicionário de dados](dicionario_dados_rais.md) |
 | LLM | provedor externo, via `llm_client` | interpretar a pergunta, sintetizar e reescrever |
@@ -54,11 +53,10 @@ O LLM nunca calcula números. Valores salariais vêm só da ferramenta de consul
 
 | Agente | Papel no enunciado | Responsabilidade | Entrada | Saída | Não faz |
 |---|---|---|---|---|---|
-| **Orquestrador** | coordenação | Entende a pergunta, decide quais agentes acionar, mantém o estado compartilhado, controla o limite de tentativas e consolida a resposta. Também aplica as regras de entrada (pergunta fora de escopo, tentativa de injeção). | pergunta da usuária | intenção e parâmetros (ocupação, UF, salário informado) | inventar dados; seguir instruções vindas de documentos |
+| **Orquestrador** | coordenação | Entende a pergunta, decide quais agentes acionar, mantém o estado compartilhado, controla o limite de tentativas e formata a resposta final (texto aprovado sem alteração, limites dos dados e fontes citadas). Também aplica as regras de entrada (pergunta fora de escopo, tentativa de injeção). Tudo em código, sem LLM. | pergunta da usuária | intenção e parâmetros (ocupação, UF, salário informado) | inventar dados; seguir instruções vindas de documentos |
 | **Pesquisa** | Research Agent | Consulta o RAG e devolve trechos com citação (fonte, página, artigo). | tema jurídico (ex.: igualdade salarial na mesma função) | lista de evidências citáveis | interpretar ou resumir a lei |
 | **Análise** | Analysis Agent | Consulta as medianas e percentis da RAIS por ocupação, UF e sexo; cruza com as evidências da Pesquisa e sintetiza. Sempre avisa as limitações: só emprego formal, diferença bruta (sem controle por perfil) e ano dos dados. | parâmetros do Orquestrador + evidências | rascunho com números, citações e limitações | calcular números fora da ferramenta |
 | **Validação** | Validation Agent | Confere se cada citação existe nas evidências, se cada número bate com a saída da ferramenta e se os avisos de limitação estão presentes. Se algo falhar, reprova com o motivo exato. | rascunho + saídas das ferramentas | aprovado, ou reprovado com motivo | reescrever a resposta |
-| **Comunicação** | Communication Agent | Adapta a resposta para a usuária: linguagem simples e acolhedora, próximos passos claros. | rascunho aprovado | resposta final | alterar números, citações ou avisos |
 
 ### Regras da consulta salarial
 
@@ -99,7 +97,6 @@ sequenceDiagram
     participant P as Pesquisa
     participant A as Análise
     participant V as Validação
-    participant C as Comunicação
 
     U->>O: "Quanto ganha uma analista de sistemas no DF, qual a diferença para homens e quais são meus direitos?"
     O->>O: intenção = salário + direitos, ocupação = CBO 2124, UF = DF
@@ -121,8 +118,8 @@ sequenceDiagram
     end
     alt aprovado
         V-->>O: aprovado
-        O->>C: adaptar linguagem
-        C-->>U: resposta final com fontes
+        O->>O: formatar (texto aprovado + limites dos dados + fontes), sem LLM
+        O-->>U: resposta final com fontes
     else reprovado de novo
         O-->>U: abstenção: explica o que não foi possível confirmar
     end
@@ -141,7 +138,7 @@ Todos os agentes leem e escrevem num único estado por execução. Cada agente e
 | `rascunho` | Análise | texto com marcações de citação |
 | `validacao` | Validação | aprovado ou reprovado, com motivo |
 | `tentativas` | Orquestrador | contador (limite: 1 nova tentativa) |
-| `resposta_final` | Comunicação | texto entregue à usuária |
+| `resposta_final` | Orquestrador | texto aprovado + limites dos dados + fontes citadas |
 
 Não há memória entre conversas neste protótipo. Guardar o histórico da usuária exige decisão sobre a LGPD (RNF-07 e RNF-16) e fica registrado no ADR.
 
@@ -154,15 +151,46 @@ Não há memória entre conversas neste protótipo. Guardar o histórico da usu�
 
 ## Demonstração
 
-O executor da demonstração (tarefa 17) roda a pergunta pela linha de comando e mostra, passo a passo, o que cada agente recebeu e devolveu. O relatório gerado vai para a pasta da equipe no Teams.
+O executor da demonstração (tarefa 17) roda a pergunta pela linha de comando e mostra, passo a passo, o que cada agente fez.
 
-As instruções de execução serão adicionadas aqui junto com o código dos agentes.
+```bash
+cp .env.example .env    # LLM (Gemini) e Langfuse; sem chaves, roda com o redator padrão e sem rastreio
+uv run python -m src.agentes.demo                       # pergunta da demonstração
+uv run python -m src.agentes.demo "Sou analista de sistemas em SP e ganho R$ 7.500. Está justo?"
+```
+
+Pré-requisito: o índice do `artemishub_rag` publicado (`uv run python -m src.pipeline` no rag). A Pesquisa roda o Retriever do rag no ambiente dele (`uv run --project`), porque os dois repos usam o pacote `src` (troca para import quando a rag#23 sair). Numa worktree, aponte `ARTEMIS_RAG_DIR` para o rag.
+
+### Rastreio no Langfuse
+
+Com `LANGFUSE_PUBLIC_KEY` e `LANGFUSE_SECRET_KEY`, cada pergunta vira um trace `responder-pergunta`:
+
+| Observação | Tipo | O que mostra |
+|---|---|---|
+| `responder-pergunta` | agent (raiz) | pergunta e resposta final; metadata com aprovado, tentativas, evidências e redator |
+| `orquestrador`, `pesquisa`, `analise_dados`, `analise_sintese`, `validacao`, `resposta` | chain (nós do LangGraph) | estado que entrou e saiu de cada nó |
+| `verificar-entrada` | guardrail | se a pergunta foi bloqueada |
+| `buscar-direitos` | retriever | tema, top_k e os trechos com citação |
+| `consultar-rais` | tool | família da CBO, UF e os números da RAIS |
+| `redigir-rascunho` | generation | prompt, resposta, modelo e tokens (só com LLM configurado) |
+| `validar-rascunho` | evaluator | rascunho e veredito, com o motivo exato da reprovação |
+
+Os nomes são estáveis: filtros, dashboards e avaliadores dependem deles.
+
+## Limitações conhecidas
+
+- **Validação por regras:** ela confere citações, valores, percentuais, o aviso de diferença bruta e o sentido da diferença. Não confere afirmações qualitativas sem número (por exemplo, "a empresa é obrigada a…"); isso é papel do juiz por LLM, que entra na semana 5.
+- **Valores das evidências:** um valor em R$ ou percentual que aparece em qualquer trecho recuperado é aceito em qualquer parágrafo, mesmo que aquele trecho não seja citado ali.
+- **Ocupação:** `buscar_ocupacao` acha a ocupação por palavras do nome na CBO. Termos que não estão nos nomes oficiais ("engenheira de software") podem cair numa ocupação parecida; o passo a passo mostra qual família foi usada.
+- **Guardrail:** é uma lista de padrões, não um classificador. Tentativas de injeção reescritas podem passar; a defesa é em camadas (dados entre delimitadores, roteamento em código e Validação).
+- **Latência:** medida em 19/11 com cache quente, a pergunta da demonstração leva cerca de 25 s: o Gemini (`gemini-3.5-flash-lite`) leva 13 s e a busca no RAG 6,5 s, porque o subprocesso carrega o modelo de embeddings a cada pergunta. Pergunta só de salário leva cerca de 11 s. A primeira execução da máquina leva mais de 1 minuto (download e carga do modelo). A meta do PDR é de até 10 s: o import direto do RAG (#37) e uma API que mantém o modelo carregado (#36) devem resolver a parte do RAG.
+- **Delimitadores do prompt:** um trecho do RAG que contenha `</evidencias>` fecha a tag antes da hora.
 
 ## Próximas etapas
 
 | Semana | O que entra |
 |---|---|
-| 5 | Agente de currículo (PDF e imagem), negociação em texto e áudio, testes de injeção, observabilidade com Langfuse |
+| 5 | Agente de currículo (PDF e imagem), negociação em texto e áudio, testes de injeção, avaliadores e datasets no Langfuse |
 | 6 | Modelo de faixa salarial com referência sem a diferença de gênero e avaliação de equidade; orquestrador exposto como API para o backend |
 | 7 | Testes com usuárias, avaliação final, relatório e apresentação |
 
