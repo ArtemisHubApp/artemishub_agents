@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from collections.abc import Callable
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -31,14 +32,26 @@ def carregar_ambiente() -> None:
     load_dotenv(rag_dir / ".env")  # não sobrescreve o que já veio do agents ou do shell
 
 
-def executar(pergunta: str) -> tuple[Estado, str | None]:
-    """Responde a pergunta e devolve o estado final e o link do trace (ou `None` sem Langfuse)."""
+Responder = Callable[[str], tuple[Estado, str | None]]
+
+
+def montar(sessao: str | None = None) -> Responder:
+    """Monta os agentes uma vez e devolve a função que responde cada pergunta (estado final e link do trace)."""
     from src.agentes.adapters.llm import redator_de_ambiente
 
     rastreador = criar_rastreador()
     redator = redator_de_ambiente()
     grafo = construir_grafo(BuscadorRagSubprocesso.de_ambiente(), ConsultaRais(), redator, rastreador)
-    return rastrear_pergunta(rastreador, grafo, pergunta, redator=type(redator).__name__)
+
+    def responder(pergunta: str) -> tuple[Estado, str | None]:
+        return rastrear_pergunta(rastreador, grafo, pergunta, redator=type(redator).__name__, sessao=sessao)
+
+    return responder
+
+
+def executar(pergunta: str) -> tuple[Estado, str | None]:
+    """Responde a pergunta e devolve o estado final e o link do trace (ou `None` sem Langfuse)."""
+    return montar()(pergunta)
 
 
 def main() -> None:
