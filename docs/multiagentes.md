@@ -177,6 +177,14 @@ Com `LANGFUSE_PUBLIC_KEY` e `LANGFUSE_SECRET_KEY`, cada pergunta vira um trace `
 
 Os nomes são estáveis: filtros, dashboards e avaliadores dependem deles.
 
+## Limitações conhecidas
+
+- **Validação por regras:** ela confere citações, valores, percentuais, o aviso de diferença bruta e o sentido da diferença. Não confere afirmações qualitativas sem número (por exemplo, "a empresa é obrigada a…"); isso é papel do juiz por LLM, que entra na semana 5.
+- **Valores das evidências:** um valor em R$ ou percentual que aparece em qualquer trecho recuperado é aceito em qualquer parágrafo, mesmo que aquele trecho não seja citado ali.
+- **Ocupação:** `buscar_ocupacao` acha a ocupação por palavras do nome na CBO. Termos que não estão nos nomes oficiais ("engenheira de software") podem cair numa ocupação parecida; o passo a passo mostra qual família foi usada.
+- **Guardrail:** é uma lista de padrões, não um classificador. Tentativas de injeção reescritas podem passar; a defesa é em camadas (dados entre delimitadores, roteamento em código e Validação).
+- **Delimitadores do prompt:** um trecho do RAG que contenha `</evidencias>` fecha a tag antes da hora.
+
 ## Próximas etapas
 
 | Semana | O que entra |
