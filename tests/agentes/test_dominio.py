@@ -111,7 +111,7 @@ def test_termo_de_ocupacao_tira_palavras_da_pergunta():
 
 
 def test_termo_de_ocupacao_com_salario_e_uf():
-    assert termo_de_ocupacao("Sou engenheira civil em SP e ganho R$ 9.000. Está justo?") == "engenheira civil"
+    assert termo_de_ocupacao("Sou engenheira civil em SP e ganho R$ 9.000. Está justo?") == "engenheiro civil"
 
 
 # formatação
