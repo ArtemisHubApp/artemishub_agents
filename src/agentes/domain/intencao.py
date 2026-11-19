@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from difflib import get_close_matches
 
 from src.agentes.domain.modelos import Intencao
 
@@ -42,7 +43,15 @@ _PALAVRAS_DA_PERGUNTA = {
     "trabalho", "diferenca", "homens", "mulheres", "mulher", "homem", "meus", "minhas", "meu", "minha",
     "direitos", "direito", "sao", "esta", "justo", "salario", "salarios", "mes", "por", "r", "eu", "que",
     "sobre", "lei", "media", "mediana", "mil", "reais", "ganhando", "recebendo",
+    # palavras de conversa que não fazem parte do nome de uma ocupação
+    "ola", "oi", "bom", "boa", "tudo", "bem", "quero", "queria", "gostaria", "pretendo", "penso", "seguir",
+    "carreira", "carreiras", "area", "profissao", "profissional", "trabalhar", "atuar", "entrar", "ser", "virar",
+    "geralmente", "normalmente", "hoje", "hj", "dia", "atualmente", "agora", "essa", "esse", "isso", "nessa",
+    "nesse", "ganhar", "paga", "pagam", "vale", "pena", "mercado", "brasil", "quando", "comeco", "inicio",
+    "iniciante", "junior", "pleno", "senior", "tem", "ter", "tenho", "anos", "ano",
 }
+
+_CONVERSA_LONGAS = sorted(p for p in _PALAVRAS_DA_PERGUNTA if len(p) >= 5)
 
 
 def _sem_acento(texto: str) -> str:
@@ -87,8 +96,15 @@ def termo_de_ocupacao(pergunta: str) -> str:
         texto = re.sub(rf"\b{nome}\b", " ", texto)
     palavras = re.findall(r"[a-z]+", texto)
     siglas = {s.lower() for s in UFS}
-    termos = [forma for p in palavras if p not in _PALAVRAS_DA_PERGUNTA and p not in siglas for forma in _formas(p)]
+    termos = [forma for p in palavras
+              if p not in _PALAVRAS_DA_PERGUNTA and p not in siglas and not _parece_palavra_de_conversa(p)
+              for forma in _formas(p)]
     return " ".join(termos)
+
+
+def _parece_palavra_de_conversa(palavra: str) -> bool:
+    """Erro de digitação de uma palavra de conversa ("carrira" → "carreira"), só para palavras com 5+ letras."""
+    return len(palavra) >= 5 and bool(get_close_matches(palavra, _CONVERSA_LONGAS, n=1, cutoff=0.85))
 
 
 def _formas(palavra: str) -> list[str]:

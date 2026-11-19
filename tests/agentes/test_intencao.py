@@ -56,3 +56,9 @@ def test_extrair_uf_sigla_minuscula_depois_de_preposicao(texto, uf):
 ])
 def test_termo_de_ocupacao_mantem_a_palavra_original_alem_do_masculino(texto, palavras):
     assert palavras <= set(termo_de_ocupacao(texto).split())
+
+
+def test_termo_de_ocupacao_ignora_palavras_de_conversa():
+    pergunta = "ola! eu quero seguir a carreira de cientsita de dados, quanto geralmente essa carrira ganha hj em dia?"
+    termo = termo_de_ocupacao(pergunta).split()
+    assert "dados" in termo and not {"ola", "quero", "seguir", "carreira", "carreiro", "geralmente", "hj"} & set(termo)
