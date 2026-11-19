@@ -87,15 +87,21 @@ def termo_de_ocupacao(pergunta: str) -> str:
         texto = re.sub(rf"\b{nome}\b", " ", texto)
     palavras = re.findall(r"[a-z]+", texto)
     siglas = {s.lower() for s in UFS}
-    return " ".join(_forma_da_cbo(p) for p in palavras if p not in _PALAVRAS_DA_PERGUNTA and p not in siglas)
+    termos = [forma for p in palavras if p not in _PALAVRAS_DA_PERGUNTA and p not in siglas for forma in _formas(p)]
+    return " ".join(termos)
 
 
-def _forma_da_cbo(palavra: str) -> str:
-    """A CBO nomeia as ocupações no masculino: "desenvolvedora" → "desenvolvedor", "engenheira" → "engenheiro"."""
+def _formas(palavra: str) -> list[str]:
+    """A CBO nomeia as ocupações no masculino.
+
+    "-ora" e "-eira" são quase sempre profissão no feminino e viram só o masculino ("desenvolvedora" →
+    "desenvolvedor"). Outras palavras em "-a" mantêm a forma original e ganham o masculino ao lado, porque
+    podem ser área ("biologia", "engenharia") e não profissão ("técnica" → "tecnica tecnico").
+    """
     if palavra.endswith("ora"):
-        return palavra[:-1]
+        return [palavra[:-1]]
     if palavra.endswith("eira"):
-        return palavra[:-1] + "o"
+        return [palavra[:-1] + "o"]
     if palavra.endswith("a") and not palavra.endswith("ista") and len(palavra) > 4:
-        return palavra[:-1] + "o"
-    return palavra
+        return [palavra, palavra[:-1] + "o"]
+    return [palavra]

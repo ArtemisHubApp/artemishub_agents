@@ -33,7 +33,6 @@ def test_intencao_quanto_sozinho_nao_e_salario(pergunta, intencao):
     ("Quanto ganha uma desenvolvedora em SP?", "desenvolvedor"),
     ("Sou engenheira de software", "engenheiro software"),
     ("quanto ganha uma programadora", "programador"),
-    ("quanto ganha uma técnica em eletrônica", "tecnico eletronico"),
     ("quanto ganha uma analista de sistemas", "analista sistemas"),
     ("quanto ganha uma cientista de dados", "cientista dados"),
 ])
@@ -48,3 +47,12 @@ def test_termo_de_ocupacao_usa_a_forma_da_cbo(texto, termo):
 ])
 def test_extrair_uf_sigla_minuscula_depois_de_preposicao(texto, uf):
     assert extrair_uf(texto) == uf
+
+
+@pytest.mark.parametrize("texto, palavras", [
+    ("pesquisadora de biologia", {"pesquisador", "biologia"}),
+    ("analista de engenharia", {"analista", "engenharia"}),
+    ("quanto ganha uma técnica em eletrônica", {"tecnica", "tecnico", "eletronica", "eletronico"}),
+])
+def test_termo_de_ocupacao_mantem_a_palavra_original_alem_do_masculino(texto, palavras):
+    assert palavras <= set(termo_de_ocupacao(texto).split())
