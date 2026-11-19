@@ -49,11 +49,20 @@ A arquitetura do primeiro protótipo, as responsabilidades de cada agente e o fl
 
 ## 🧰 Stack
 
-A definir pela equipe (framework de agentes e provedor de LLM). As decisões serão registradas como ADR no [artemishub_docs](https://github.com/ArtemisHubApp/artemishub_docs).
+LangGraph para orquestrar os agentes (ADR-002), Gemini pelo endpoint compatível com OpenAI (`langchain-openai`) e Langfuse para rastreio. As decisões ficam como ADR no [artemishub_docs](https://github.com/ArtemisHubApp/artemishub_docs).
 
 ## ▶️ Como executar
 
-As instruções de instalação e execução serão adicionadas junto com o primeiro scaffold dos agentes.
+Pré-requisitos: Python 3.12+, [uv](https://docs.astral.sh/uv/) e o índice do [artemishub_rag](https://github.com/ArtemisHubApp/artemishub_rag) publicado.
+
+```bash
+uv sync --dev
+cp .env.example .env                 # LLM (Gemini) e Langfuse; opcionais
+uv run pytest -q                     # testes, sem LLM, RAG nem Langfuse
+uv run python -m src.agentes.demo    # protótipo multiagente com a pergunta da demonstração
+```
+
+Sem chave de LLM, a Análise usa um rascunho padrão (sem LLM), e sem chaves do Langfuse não há rastreio; a demo roda nos dois casos. Detalhes, fluxo e o que aparece no Langfuse: [docs/multiagentes.md](docs/multiagentes.md).
 
 ## 🧠 Desenvolvimento orientado a spec (SDD)
 
