@@ -38,7 +38,7 @@ except ImportError:
         if isinstance(origem, str):
             origem = json.loads(origem)
         saida.append({{"id": f"FONTE {{i}}", "titulo": meta.get("title") or "", "url": meta.get("source_url") or "",
-                      "pagina": str(meta["page"]) if meta.get("page") else None,
+                      "pagina": str(meta["page"]) if meta.get("page") is not None else None,
                       "artigo": origem.get("article"), "texto": hit["text"]}})
 else:
     evidencias = buscar(pedido["tema"], pedido["top_k"], parcial=pedido["parcial"])
