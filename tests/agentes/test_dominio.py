@@ -364,3 +364,7 @@ def test_prompt_usa_o_nome_da_ocupacao_perguntada():
                                          ocupacao="Cientista de dados"),
                               DADOS, [])
     assert "Cientista de dados" in montar_mensagens(pedido)[1]["content"]
+
+
+def test_prompt_nao_atribui_a_mediana_a_usuaria():
+    assert "não diga que é o salário dela" in montar_mensagens(_pedido())[0]["content"]
