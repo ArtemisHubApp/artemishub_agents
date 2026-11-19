@@ -9,9 +9,11 @@ protótipo), vira um trace no Langfuse, e a conversa inteira é uma sessão.
 
 from __future__ import annotations
 
+import argparse
 import uuid
 from collections.abc import Callable
 
+from src.agentes.adapters.rastreio import AMBIENTES, configurar_ambiente
 from src.agentes.demo import Responder, carregar_ambiente, montar
 
 BOAS_VINDAS = (
@@ -62,10 +64,14 @@ def conversar(responder: Responder, ler: Callable[[str], str] = input,
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Conversa com os agentes do Artemis pelo terminal")
+    parser.add_argument("--ambiente", choices=AMBIENTES, help="environment no Langfuse (padrão: o do .env)")
+    args = parser.parse_args()
     carregar_ambiente()
+    configurar_ambiente(args.ambiente)
     sessao = f"chat-{uuid.uuid4().hex[:12]}"
     print("Montando os agentes...")
-    raise SystemExit(conversar(montar(sessao=sessao)))
+    raise SystemExit(conversar(montar(sessao=sessao, interface="chat")))
 
 
 if __name__ == "__main__":
