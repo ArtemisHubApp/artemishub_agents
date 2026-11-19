@@ -21,6 +21,7 @@ from src.agentes.adapters.rag_subprocesso import RAIZ_AGENTS, BuscadorRagSubproc
 from src.agentes.adapters.rastreio import AMBIENTES, configurar_ambiente, criar_rastreador, rastrear_pergunta
 from src.agentes.adapters.salarios_rais import ConsultaRais
 from src.agentes.application.grafo import Estado, construir_grafo
+from src.agentes.application.portas import MemoriaDaConversa
 
 PERGUNTA_DEMO = ("Quanto ganha uma analista de sistemas no DF, qual a diferença para homens e quais são meus "
                  "direitos?")
@@ -35,14 +36,15 @@ def carregar_ambiente() -> None:
 Responder = Callable[[str], tuple[Estado, str | None]]
 
 
-def montar(sessao: str | None = None, interface: str = "demo") -> Responder:
+def montar(sessao: str | None = None, interface: str = "demo",
+           memoria: MemoriaDaConversa | None = None) -> Responder:
     """Monta os agentes uma vez e devolve a função que responde cada pergunta (estado final e link do trace)."""
     from src.agentes.adapters.llm import RedatorLLM, redator_de_ambiente
 
     rastreador = criar_rastreador()
     redator = redator_de_ambiente()
     buscador = BuscadorRagSubprocesso.de_ambiente()
-    grafo = construir_grafo(buscador, ConsultaRais(), redator, rastreador)
+    grafo = construir_grafo(buscador, ConsultaRais(), redator, rastreador, memoria=memoria)
     contexto = {
         "interface": interface,
         "redator": type(redator).__name__,

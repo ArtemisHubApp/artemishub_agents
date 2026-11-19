@@ -120,7 +120,7 @@ def rastrear_pergunta(rastreador: LangfuseRastreador | RastreadorNulo, grafo: An
     `sessao` agrupa os traces de uma mesma conversa (chat no terminal) no Sessions view do Langfuse.
     """
     if not isinstance(rastreador, LangfuseRastreador):
-        return responder(grafo, pergunta), None
+        return responder(grafo, pergunta, sessao=sessao), None
     from langfuse import propagate_attributes
     from langfuse.langchain import CallbackHandler
 
@@ -129,7 +129,7 @@ def rastrear_pergunta(rastreador: LangfuseRastreador | RastreadorNulo, grafo: An
         with cliente.start_as_current_observation(name=NOME_TRACE, as_type="agent", input=pergunta) as raiz:
             with propagate_attributes(**atributos_do_trace(contexto, sessao)):
                 estado = responder(grafo, pergunta,
-                                   {"callbacks": [CallbackHandler()], "run_name": "fluxo-multiagente"})
+                                   {"callbacks": [CallbackHandler()], "run_name": "fluxo-multiagente"}, sessao=sessao)
             raiz.update(output=estado["resposta_final"], metadata=metadata_do_resultado(estado))
             for nome, valor, tipo in scores_do_resultado(estado):
                 raiz.score_trace(name=nome, value=valor, data_type=tipo)

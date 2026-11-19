@@ -69,3 +69,14 @@ def test_esquecer_limpa_a_sessao():
     responder(grafo, "Quanto ganha uma analista de sistemas no DF?", sessao="s1")
     memoria.esquecer("s1")
     assert memoria.recuperar("s1") is None
+
+
+def test_rastreio_repassa_a_sessao_para_a_memoria():
+    from src.agentes.adapters.rastreio import rastrear_pergunta
+    from src.agentes.application.portas import RastreadorNulo
+
+    memoria = MemoriaEmProcesso()
+    grafo, consulta = _grafo(memoria)
+    rastrear_pergunta(RastreadorNulo(), grafo, "Quanto ganha uma analista de sistemas em SP?", {}, sessao="s1")
+    rastrear_pergunta(RastreadorNulo(), grafo, "e no DF?", {}, sessao="s1")
+    assert consulta.consultas[-1] == ("2124", "DF", None)
