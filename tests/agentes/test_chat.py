@@ -3,7 +3,7 @@
 from src.agentes.adapters.rastreio import rastrear_pergunta
 from src.agentes.application.grafo import construir_grafo
 from src.agentes.application.portas import RastreadorNulo
-from src.agentes.chat import AJUDA, DESPEDIDA, conversar
+from src.agentes.chat import AJUDA, BOAS_VINDAS, DESPEDIDA, conversar
 from tests.agentes.test_dominio import PERGUNTA_DEMO
 from tests.agentes.test_grafo import BuscadorFake, ConsultaFake, RedatorFake
 
@@ -95,3 +95,15 @@ def test_mostra_o_link_do_trace_quando_existe():
     estado = {"resposta_final": "Resposta.", "passos": []}
     conversar(lambda _: (estado, "https://langfuse.example/trace/1"), terminal.ler, terminal.escrever)
     assert "https://langfuse.example/trace/1" in terminal.texto
+
+
+def test_esquecer_limpa_a_memoria_da_conversa():
+    esquecidas = []
+    terminal = Terminal("/esquecer", "/sair")
+    responder, perguntas = _responder()
+    conversar(responder, terminal.ler, terminal.escrever, esquecer=lambda: esquecidas.append(True))
+    assert esquecidas == [True] and "Esqueci" in terminal.texto and perguntas == []
+
+
+def test_boas_vindas_explica_o_que_a_memoria_guarda():
+    assert "ocupação" in BOAS_VINDAS and "/esquecer" in AJUDA

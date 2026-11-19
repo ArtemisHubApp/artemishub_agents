@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from contextlib import AbstractContextManager, contextmanager
 from typing import Any, Protocol
 
-from src.agentes.domain.modelos import DadosSalariais, Evidencia, PedidoDeRascunho
+from src.agentes.domain.modelos import DadosSalariais, Evidencia, Lembranca, PedidoDeRascunho
 
 
 class FonteIndisponivel(RuntimeError):
@@ -27,6 +27,16 @@ class Redator(Protocol):
     """Escreve o rascunho da Análise. `config` é o RunnableConfig do LangGraph, para o rastreio aninhar a chamada."""
 
     def redigir(self, pedido: PedidoDeRascunho, config: Any = None) -> str: ...
+
+
+class MemoriaDaConversa(Protocol):
+    """Guarda a `Lembranca` de cada sessão. Hoje em memória; o adaptador Postgres vem com o backend."""
+
+    def recuperar(self, sessao: str) -> Lembranca | None: ...
+
+    def lembrar(self, sessao: str, lembranca: Lembranca) -> None: ...
+
+    def esquecer(self, sessao: str) -> None: ...
 
 
 class Etapa(Protocol):

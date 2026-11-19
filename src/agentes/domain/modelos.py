@@ -42,6 +42,22 @@ class Parametros:
 
 
 @dataclass(frozen=True)
+class Lembranca:
+    """O que a conversa lembra entre perguntas: só a intenção, a ocupação e o lugar.
+
+    Nunca o valor do salário, o sexo, a raça ou a origem da usuária: memória com dados pessoais é vetor de viés
+    em LLMs (relatório de vieses do projeto) e exige decisão de LGPD.
+    """
+
+    salario: bool
+    direitos: bool
+    cbo_familia: str | None
+    cbo_familia_nome: str | None
+    ocupacao: str | None
+    uf: str
+
+
+@dataclass(frozen=True)
 class Validacao:
     aprovado: bool
     motivo: str | None = None

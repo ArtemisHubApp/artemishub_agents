@@ -13,20 +13,23 @@ import argparse
 import uuid
 from collections.abc import Callable
 
+from src.agentes.adapters.memoria import MemoriaEmProcesso
 from src.agentes.adapters.rastreio import AMBIENTES, configurar_ambiente
 from src.agentes.demo import Responder, carregar_ambiente, montar
 
 BOAS_VINDAS = (
     "Artemis: pergunte sobre salário em carreiras STEM ou sobre seus direitos no trabalho.\n"
-    "Cada pergunta é respondida sozinha (ainda não há memória da conversa). Digite /ajuda para ver os comandos."
+    "Eu lembro só a ocupação e o lugar da última pergunta (\"e no DF?\" funciona); não guardo seu salário nem "
+    "dados pessoais. Digite /ajuda para ver os comandos."
 )
-AJUDA = "Comandos: /passos liga ou desliga o passo a passo dos agentes; /ajuda mostra esta ajuda; /sair encerra."
+AJUDA = ("Comandos: /passos liga ou desliga o passo a passo dos agentes; /esquecer apaga o que lembro da conversa; "
+         "/ajuda mostra esta ajuda; /sair encerra.")
 DESPEDIDA = "Até logo!"
 PROMPT = "\nvocê> "
 
 
 def conversar(responder: Responder, ler: Callable[[str], str] = input,
-              escrever: Callable[..., None] = print) -> int:
+              escrever: Callable[..., None] = print, esquecer: Callable[[], None] | None = None) -> int:
     """Laço da conversa. Devolve 0 ao sair (por /sair, Ctrl+D ou Ctrl+C)."""
     mostrar_passos = False
     escrever(BOAS_VINDAS)
@@ -46,6 +49,9 @@ def conversar(responder: Responder, ler: Callable[[str], str] = input,
             if comando == "/passos":
                 mostrar_passos = not mostrar_passos
                 escrever(f"Passo a passo {'ligado' if mostrar_passos else 'desligado'}.")
+            elif comando == "/esquecer" and esquecer:
+                esquecer()
+                escrever("Esqueci a ocupação e o lugar desta conversa.")
             elif comando == "/ajuda":
                 escrever(AJUDA)
             else:
@@ -71,7 +77,9 @@ def main() -> None:
     configurar_ambiente(args.ambiente)
     sessao = f"chat-{uuid.uuid4().hex[:12]}"
     print("Montando os agentes...")
-    raise SystemExit(conversar(montar(sessao=sessao, interface="chat")))
+    memoria = MemoriaEmProcesso()
+    responder = montar(sessao=sessao, interface="chat", memoria=memoria)
+    raise SystemExit(conversar(responder, esquecer=lambda: memoria.esquecer(sessao)))
 
 
 if __name__ == "__main__":

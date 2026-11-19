@@ -16,6 +16,7 @@ from src.agentes.application.portas import (
     BuscadorDeDireitos,
     ConsultaSalarial,
     FonteIndisponivel,
+    MemoriaDaConversa,
     Rastreador,
     RastreadorNulo,
     Redator,
@@ -26,6 +27,7 @@ from src.agentes.domain.modelos import (
     DadosSalariais,
     Evidencia,
     Intencao,
+    Lembranca,
     Parametros,
     PedidoDeRascunho,
     Validacao,
@@ -40,6 +42,7 @@ MAX_TENTATIVAS = 2  # a primeira e mais uma, se a Validação reprovar
 
 class Estado(TypedDict, total=False):
     pergunta: str
+    sessao: str | None
     bloqueio: str | None
     intencao: Intencao
     parametros: Parametros
@@ -58,6 +61,7 @@ def construir_grafo(
     consulta: ConsultaSalarial,
     redator: Redator,
     rastreador: Rastreador | None = None,
+    memoria: MemoriaDaConversa | None = None,
 ) -> Any:
     """Monta e compila o grafo. As dependências chegam prontas (a montagem fica em `demo.py`)."""
     rastreio = rastreador or RastreadorNulo()
@@ -69,20 +73,32 @@ def construir_grafo(
             etapa.registrar({"bloqueada": bloqueio is not None, "mensagem": bloqueio})
         if bloqueio:
             return {"bloqueio": bloqueio, "passos": ["orquestrador: pergunta bloqueada pelo guardrail"]}
-        intencao = interpretar(pergunta)
-        termo, familia, nome, ocupacao = termo_de_ocupacao(pergunta), None, None, None
-        if intencao.salario:
-            achadas = consulta.buscar_ocupacao(termo)
-            if achadas:
-                familia, nome = achadas[0]["cbo_familia"], achadas[0]["cbo_familia_nome"]
-                ocupacao = achadas[0]["cbo_nome"]
-        parametros = Parametros(termo, familia, nome, extrair_uf(pergunta) or "BR", extrair_salario(pergunta),
-                                ocupacao=ocupacao)
+        sessao = estado.get("sessao")
+        lembranca = memoria.recuperar(sessao) if memoria and sessao else None
+        intencao, uf, termo = interpretar(pergunta), extrair_uf(pergunta), termo_de_ocupacao(pergunta)
+        achadas = consulta.buscar_ocupacao(termo) if termo and (intencao.salario or lembranca) else []
+        herdados: list[str] = []
+        # "e no DF?": sem tema próprio, mas com lugar ou ocupação, continua o assunto da pergunta anterior
+        if intencao.fora_de_escopo and lembranca and (uf or achadas):
+            intencao = Intencao(lembranca.salario, lembranca.direitos)
+            herdados.append("intenção")
+        familia, nome, ocupacao = None, None, None
+        if intencao.salario and achadas:
+            familia, nome, ocupacao = achadas[0]["cbo_familia"], achadas[0]["cbo_familia_nome"], achadas[0]["cbo_nome"]
+        elif intencao.salario and lembranca and lembranca.cbo_familia:
+            familia, nome, ocupacao = lembranca.cbo_familia, lembranca.cbo_familia_nome, lembranca.ocupacao
+            herdados.append("ocupação")
+        if not uf and lembranca and lembranca.uf != "BR" and not intencao.fora_de_escopo:
+            uf = lembranca.uf
+            herdados.append("UF")
+        parametros = Parametros(termo, familia, nome, uf or "BR", extrair_salario(pergunta), ocupacao=ocupacao)
         temas = [t for t, pedido in (("salário", intencao.salario), ("direitos", intencao.direitos)) if pedido]
         passo = f"orquestrador: intenção {' + '.join(temas) or 'fora de escopo'}"
         if intencao.salario:
             familia_texto = f"família {familia}: {nome}" if familia else "família não encontrada"
             passo += f"; ocupação {ocupacao or termo} ({familia_texto}), UF {parametros.uf}"
+        if herdados:
+            passo += f" ({', '.join(herdados)} {'lembradas' if len(herdados) > 1 else 'lembrada'} da conversa)"
         return {"bloqueio": None, "intencao": intencao, "parametros": parametros, "tentativas": 0, "passos": [passo]}
 
     def rotear_entrada(estado: Estado) -> str | list[str]:
@@ -157,7 +173,16 @@ def construir_grafo(
             texto = formatar_resposta(estado["rascunho"], estado.get("evidencias", []), estado.get("dados_salariais"))
         else:
             texto = formatar_abstencao(estado.get("evidencias", []), estado.get("dados_salariais"))
+        _lembrar(estado)
         return {"resposta_final": texto, "passos": ["resposta: formatada pelo Orquestrador"]}
+
+    def _lembrar(estado: Estado) -> None:
+        """Guarda intenção, ocupação e UF da pergunta atendida; pergunta bloqueada ou fora de escopo não muda nada."""
+        sessao, intencao, parametros = estado.get("sessao"), estado.get("intencao"), estado.get("parametros")
+        if not memoria or not sessao or estado.get("bloqueio") or not intencao or intencao.fora_de_escopo:
+            return
+        memoria.lembrar(sessao, Lembranca(intencao.salario, intencao.direitos, parametros.cbo_familia,
+                                          parametros.cbo_familia_nome, parametros.ocupacao, parametros.uf))
 
     grafo = StateGraph(Estado)
     for nome, funcao in (("orquestrador", orquestrador), ("pesquisa", pesquisa), ("analise_dados", analise_dados),
@@ -173,6 +198,6 @@ def construir_grafo(
     return grafo.compile()
 
 
-def responder(grafo: Any, pergunta: str, config: RunnableConfig | None = None) -> Estado:
+def responder(grafo: Any, pergunta: str, config: RunnableConfig | None = None, sessao: str | None = None) -> Estado:
     """Roda o grafo para uma pergunta e devolve o estado final (a resposta está em `resposta_final`)."""
-    return grafo.invoke({"pergunta": pergunta, "passos": []}, config=config)
+    return grafo.invoke({"pergunta": pergunta, "sessao": sessao, "passos": []}, config=config)
