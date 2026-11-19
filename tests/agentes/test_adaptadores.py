@@ -146,7 +146,7 @@ def test_sem_chaves_do_langfuse_o_rastreio_e_nulo_e_o_fluxo_roda(monkeypatch):
     rastreador = criar_rastreador()
     assert isinstance(rastreador, RastreadorNulo)
     grafo = construir_grafo(BuscadorFake(), ConsultaFake(), RedatorFake(), rastreador)
-    estado, link = rastrear_pergunta(rastreador, grafo, PERGUNTA_DEMO, redator="RedatorFake")
+    estado, link = rastrear_pergunta(rastreador, grafo, PERGUNTA_DEMO, contexto={"interface": "teste"})
     assert link is None and estado["validacao"].aprovado
 
 

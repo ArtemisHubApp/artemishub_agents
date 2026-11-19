@@ -36,7 +36,7 @@ def _responder():
 
     def responder(pergunta):
         perguntas.append(pergunta)
-        return rastrear_pergunta(RastreadorNulo(), grafo, pergunta, redator="RedatorFake")
+        return rastrear_pergunta(RastreadorNulo(), grafo, pergunta, contexto={"interface": "teste"})
 
     return responder, perguntas
 
