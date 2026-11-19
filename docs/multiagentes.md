@@ -159,6 +159,14 @@ uv run python -m src.agentes.demo                       # pergunta da demonstra�
 uv run python -m src.agentes.demo "Sou analista de sistemas em SP e ganho R$ 7.500. Está justo?"
 ```
 
+Para testar várias perguntas sem remontar os agentes a cada uma, use o chat no terminal:
+
+```bash
+uv run python -m src.agentes.chat
+```
+
+`/passos` liga e desliga o passo a passo de cada agente, `/ajuda` mostra os comandos e `/sair` (ou Ctrl+D) encerra. Cada pergunta é respondida sozinha, sem memória da conversa, como no protótipo. No Langfuse, cada pergunta é um trace e a conversa inteira é uma sessão (`chat-…`), visível na tela Sessions.
+
 Pré-requisito: o índice do `artemishub_rag` publicado (`uv run python -m src.pipeline` no rag). A Pesquisa roda o Retriever do rag no ambiente dele (`uv run --project`), porque os dois repos usam o pacote `src` (troca para import quando a rag#23 sair). Numa worktree, aponte `ARTEMIS_RAG_DIR` para o rag.
 
 ### Rastreio no Langfuse
