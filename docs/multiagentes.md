@@ -189,7 +189,7 @@ Os nomes são estáveis: filtros, dashboards e avaliadores dependem deles.
 
 - **Environment:** `development` (padrão) ou `demo`, com `--ambiente demo` no chat e na demo (`uv run python -m src.agentes.chat --ambiente demo`). `production` fica para a API do backend (#36). No Langfuse, o seletor de environment no topo separa os traces da apresentação dos testes.
 - **Release:** o hash curto do commit em execução (`LANGFUSE_RELEASE`), para comparar versões.
-- **Metadata do trace:** interface (`chat` ou `demo`), redator, modelo, modo do RAG, label do prompt, intenção, família da CBO, ocupação, UF pedida e UF usada, número de evidências e se havia salário informado. **O valor do salário nunca vai para o Langfuse** (dado pessoal).
+- **Metadata do trace:** interface (`chat` ou `demo`), redator, modelo, modo do RAG, label do prompt, intenção, família da CBO, ocupação, UF pedida e UF usada, número de evidências e se havia salário informado. O valor do salário não entra na metadata nem nos scores (dado pessoal). Atenção: a pergunta vai como entrada do trace e os dados salariais vão na generation, então um salário escrito na pergunta aparece no Langfuse.
 - **Scores por trace:** `validacao_aprovada`, `tentativas`, `abstencao`, `bloqueada` e `fora_de_escopo`. São rótulos definidos depois da execução, por isso são scores e não tags; servem para filtrar e montar painéis (por exemplo, taxa de abstenção por ocupação).
 
 ### Prompts no Langfuse

@@ -2,7 +2,8 @@
 
 Só liga quando `LANGFUSE_PUBLIC_KEY` e `LANGFUSE_SECRET_KEY` existem; senão o rastreador nulo assume.
 Cada execução tem ambiente (`development` ou `demo`) e release (hash do commit); o resultado vira metadata
-e scores, para filtrar e montar painéis. O salário informado pela usuária nunca vai para o Langfuse.
+e scores, para filtrar e montar painéis. O salário informado não entra na metadata nem nos scores (mas a
+pergunta, que pode contê-lo, é a entrada do trace).
 """
 
 from __future__ import annotations
