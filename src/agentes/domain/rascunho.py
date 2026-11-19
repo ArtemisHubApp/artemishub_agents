@@ -30,7 +30,8 @@ def _linhas_salariais(dados: DadosSalariais | None) -> list[str]:
     if not dados or not dados.get("suficiente"):
         return ["Sem dados salariais suficientes para esse recorte."]
     local = "Brasil" if dados["uf_usada"] == "BR" else dados["uf_usada"]
-    linhas = [f"Ocupação: {dados['cbo_familia_nome']} (CBO {dados['cbo_familia']}), {local}, RAIS {dados['ano']}."]
+    grupo = f"{dados['cbo_familia_nome']} (família {dados['cbo_familia']})"
+    linhas = [f"Grupo da CBO: {grupo}, {local}, RAIS {dados['ano']}."]
     rotulos = {"feminino": "Mulheres", "masculino": "Homens", "todos": "Todas as pessoas"}
     for sexo, n in dados["por_sexo"].items():
         linha = (f"{rotulos[sexo]}: mediana {brl(n['p50'])}, faixa do meio de {brl(n['p25'])} a {brl(n['p75'])}, "
@@ -60,8 +61,11 @@ def montar_mensagens(pedido: PedidoDeRascunho) -> list[dict[str, str]]:
         + f"\n{e.texto[:1200]}"
         for e in pedido.evidencias
     ) or "Nenhuma evidência recuperada."
+    ocupacao = pedido.parametros.ocupacao
     partes = [
         f"<pergunta>\n{pedido.pergunta}\n</pergunta>",
+        *([f"Ocupação encontrada na CBO: {ocupacao}. Fale dela pelo nome; os números são do grupo da CBO dela."]
+          if ocupacao else []),
         "<dados_salariais>\n" + "\n".join(_linhas_salariais(pedido.dados_salariais)) + "\n</dados_salariais>",
         f"<evidencias>\n{evidencias}\n</evidencias>",
     ]

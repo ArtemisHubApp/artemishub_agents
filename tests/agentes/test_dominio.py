@@ -356,3 +356,11 @@ def test_prompt_pede_resposta_curta_sem_repetir_avisos():
     sistema = montar_mensagens(_pedido())[0]["content"]
     assert "no máximo 3 parágrafos curtos" in sistema
     assert "não repita os avisos" in sistema.lower()
+
+
+def test_prompt_usa_o_nome_da_ocupacao_perguntada():
+    pedido = PedidoDeRascunho(PERGUNTA_DEMO, Intencao(True, False),
+                              Parametros("cientista dados", "2112", "Profissionais de estatística e afins", "BR", None,
+                                         ocupacao="Cientista de dados"),
+                              DADOS, [])
+    assert "Cientista de dados" in montar_mensagens(pedido)[1]["content"]

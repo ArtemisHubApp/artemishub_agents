@@ -125,3 +125,9 @@ def test_citacao_combinada_do_llm_e_normalizada_e_aparece_nas_fontes():
     estado, *_ = _rodar(PERGUNTA_DEMO, redator=RedatorFake(texto))
     assert estado["validacao"].aprovado and estado["tentativas"] == 1
     assert "[FONTE 1] [FONTE 2]" in estado["resposta_final"] and "- FONTE 2: CLT" in estado["resposta_final"]
+
+
+def test_orquestrador_guarda_o_nome_da_ocupacao_encontrada():
+    estado, *_ = _rodar(PERGUNTA_DEMO)
+    assert estado["parametros"].ocupacao == "Analista de desenvolvimento de sistemas"
+    assert "Analista de desenvolvimento de sistemas" in estado["passos"][0]
