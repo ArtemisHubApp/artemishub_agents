@@ -1,0 +1,562 @@
+{
+  "global": {
+    "total_vinculos": 2478804,
+    "media": 7816.12,
+    "mediana": 5026.9,
+    "std": 8338.12,
+    "p10": 1947.65,
+    "p25": 2826.77,
+    "p75": 9972.52,
+    "p90": 16608.13,
+    "p99": 40828.7,
+    "min": 455.4,
+    "max": 226336.62,
+    "iqr": 7145.75,
+    "assimetria": 4.14,
+    "curtose": 37.05
+  },
+  "outliers": {
+    "limite_superior_iqr": 20691.15,
+    "n_outliers": 146205,
+    "pct_outliers": 5.9,
+    "n_acima_50k": 11995,
+    "n_acima_100k": 966
+  },
+  "sexo": {
+    "masculino": {
+      "n": 2017533,
+      "pct": 81.39,
+      "media": 7895.52,
+      "mediana": 5092.99,
+      "std": 8449.01,
+      "p10": 1966.44,
+      "p25": 2858.79,
+      "p75": 10019.52,
+      "p90": 16765.18,
+      "iqr": 7160.73
+    },
+    "feminino": {
+      "n": 461271,
+      "pct": 18.61,
+      "media": 7468.81,
+      "mediana": 4738.4,
+      "std": 7825.26,
+      "p10": 1869.62,
+      "p25": 2702.23,
+      "p75": 9743.4,
+      "p90": 15974.22,
+      "iqr": 7041.17
+    },
+    "gap_mediano_pct": 6.96,
+    "gap_medio_pct": 5.4,
+    "razao_paridade_mediana": 0.9304,
+    "razao_paridade_media": 0.946
+  },
+  "nivel": {
+    "gestao": {
+      "total": 142435,
+      "pct_do_total": 5.75,
+      "n_homens": 104478,
+      "n_mulheres": 37957,
+      "pct_mulheres": 26.65,
+      "mediana_homens": 15956.62,
+      "mediana_mulheres": 13968.56,
+      "media_homens": 18295.3,
+      "media_mulheres": 16259.39,
+      "p25_mulheres": 8077.0,
+      "p75_mulheres": 20900.56,
+      "gap_mediano_pct": 12.46,
+      "gap_medio_pct": 11.13,
+      "razao_paridade": 0.8754
+    },
+    "superior": {
+      "total": 991382,
+      "pct_do_total": 39.99,
+      "n_homens": 764562,
+      "n_mulheres": 226820,
+      "pct_mulheres": 22.88,
+      "mediana_homens": 8601.85,
+      "mediana_mulheres": 7115.28,
+      "media_homens": 10869.61,
+      "media_mulheres": 9161.6,
+      "p25_mulheres": 3975.62,
+      "p75_mulheres": 12058.83,
+      "gap_mediano_pct": 17.28,
+      "gap_medio_pct": 15.71,
+      "razao_paridade": 0.8272
+    },
+    "tecnico": {
+      "total": 1344987,
+      "pct_do_total": 54.26,
+      "n_homens": 1148493,
+      "n_mulheres": 196494,
+      "pct_mulheres": 14.61,
+      "mediana_homens": 3646.79,
+      "mediana_mulheres": 2931.36,
+      "media_homens": 4969.58,
+      "media_mulheres": 3816.67,
+      "p25_mulheres": 2067.89,
+      "p75_mulheres": 4425.24,
+      "gap_mediano_pct": 19.62,
+      "gap_medio_pct": 23.2,
+      "razao_paridade": 0.8038
+    }
+  },
+  "stem_area": {
+    "ciencias_agrarias": {
+      "total": 22557,
+      "pct_mulheres": 24.44,
+      "mediana_homens": 11046.19,
+      "mediana_mulheres": 8395.64,
+      "media_homens": 12278.36,
+      "media_mulheres": 9568.79,
+      "gap_mediano_pct": 24.0,
+      "razao_paridade": 0.76
+    },
+    "ciencias_exatas": {
+      "total": 71452,
+      "pct_mulheres": 35.96,
+      "mediana_homens": 4089.58,
+      "mediana_mulheres": 3643.1,
+      "media_homens": 6963.12,
+      "media_mulheres": 6011.56,
+      "gap_mediano_pct": 10.92,
+      "razao_paridade": 0.8908
+    },
+    "ciencias_naturais": {
+      "total": 10849,
+      "pct_mulheres": 68.67,
+      "mediana_homens": 5257.08,
+      "mediana_mulheres": 4843.06,
+      "media_homens": 7216.61,
+      "media_mulheres": 6319.49,
+      "gap_mediano_pct": 7.88,
+      "razao_paridade": 0.9212
+    },
+    "computacao": {
+      "total": 1096888,
+      "pct_mulheres": 21.01,
+      "mediana_homens": 6211.27,
+      "mediana_mulheres": 5421.44,
+      "media_homens": 8903.81,
+      "media_mulheres": 7907.13,
+      "gap_mediano_pct": 12.72,
+      "razao_paridade": 0.8728
+    },
+    "construcao": {
+      "total": 138353,
+      "pct_mulheres": 22.42,
+      "mediana_homens": 3263.37,
+      "mediana_mulheres": 3212.93,
+      "media_homens": 4213.45,
+      "media_mulheres": 4049.17,
+      "gap_mediano_pct": 1.55,
+      "razao_paridade": 0.9845
+    },
+    "desenho_tecnico": {
+      "total": 88289,
+      "pct_mulheres": 28.33,
+      "mediana_homens": 4027.89,
+      "mediana_mulheres": 2899.19,
+      "media_homens": 4897.47,
+      "media_mulheres": 3442.67,
+      "gap_mediano_pct": 28.02,
+      "razao_paridade": 0.7198
+    },
+    "eletroeletronica": {
+      "total": 439383,
+      "pct_mulheres": 5.98,
+      "mediana_homens": 3511.53,
+      "mediana_mulheres": 2705.07,
+      "media_homens": 4827.24,
+      "media_mulheres": 3576.93,
+      "gap_mediano_pct": 22.97,
+      "razao_paridade": 0.7703
+    },
+    "engenharia": {
+      "total": 243378,
+      "pct_mulheres": 18.42,
+      "mediana_homens": 10674.35,
+      "mediana_mulheres": 10438.27,
+      "media_homens": 12897.41,
+      "media_mulheres": 11267.96,
+      "gap_mediano_pct": 2.21,
+      "razao_paridade": 0.9779
+    },
+    "matematica_estatistica": {
+      "total": 16793,
+      "pct_mulheres": 34.63,
+      "mediana_homens": 9000.0,
+      "mediana_mulheres": 8095.28,
+      "media_homens": 11271.4,
+      "media_mulheres": 9878.63,
+      "gap_mediano_pct": 10.05,
+      "razao_paridade": 0.8995
+    },
+    "metalmecanica": {
+      "total": 206309,
+      "pct_mulheres": 4.47,
+      "mediana_homens": 4370.46,
+      "mediana_mulheres": 3502.28,
+      "media_homens": 5732.09,
+      "media_mulheres": 4442.34,
+      "gap_mediano_pct": 19.86,
+      "razao_paridade": 0.8014
+    },
+    "mineracao": {
+      "total": 12266,
+      "pct_mulheres": 18.07,
+      "mediana_homens": 5830.41,
+      "mediana_mulheres": 4407.45,
+      "media_homens": 8203.83,
+      "media_mulheres": 5640.14,
+      "gap_mediano_pct": 24.41,
+      "razao_paridade": 0.7559
+    },
+    "pesquisa": {
+      "total": 64770,
+      "pct_mulheres": 33.03,
+      "mediana_homens": 14800.0,
+      "mediana_mulheres": 12511.51,
+      "media_homens": 18039.19,
+      "media_mulheres": 15644.35,
+      "gap_mediano_pct": 15.46,
+      "razao_paridade": 0.8454
+    },
+    "quimica": {
+      "total": 67517,
+      "pct_mulheres": 39.05,
+      "mediana_homens": 4220.3,
+      "mediana_mulheres": 3390.61,
+      "media_homens": 5521.37,
+      "media_mulheres": 4249.13,
+      "gap_mediano_pct": 19.66,
+      "razao_paridade": 0.8034
+    }
+  },
+  "interseccional": {
+    "feminino_amarela": {
+      "n": 8350,
+      "pct_total": 0.34,
+      "mediana": 8737.56,
+      "media": 11429.53,
+      "p25": 4150.6,
+      "p75": 15319.98,
+      "razao_vs_homem_branco": 1.4434
+    },
+    "feminino_branca": {
+      "n": 275088,
+      "pct_total": 11.1,
+      "mediana": 5522.34,
+      "media": 8394.2,
+      "p25": 3009.51,
+      "p75": 11122.24,
+      "razao_vs_homem_branco": 0.9123
+    },
+    "feminino_indigena": {
+      "n": 786,
+      "pct_total": 0.03,
+      "mediana": 4727.6,
+      "media": 7606.89,
+      "p25": 2887.37,
+      "p75": 10693.03,
+      "razao_vs_homem_branco": 0.781
+    },
+    "feminino_nao_identificado": {
+      "n": 5598,
+      "pct_total": 0.23,
+      "mediana": 4220.66,
+      "media": 7242.31,
+      "p25": 2658.13,
+      "p75": 8632.82,
+      "razao_vs_homem_branco": 0.6972
+    },
+    "feminino_parda": {
+      "n": 143934,
+      "pct_total": 5.81,
+      "mediana": 3713.61,
+      "media": 5765.2,
+      "p25": 2307.54,
+      "p75": 7121.72,
+      "razao_vs_homem_branco": 0.6135
+    },
+    "feminino_preta": {
+      "n": 27515,
+      "pct_total": 1.11,
+      "mediana": 3984.68,
+      "media": 5968.89,
+      "p25": 2440.42,
+      "p75": 7488.12,
+      "razao_vs_homem_branco": 0.6583
+    },
+    "masculino_amarela": {
+      "n": 26488,
+      "pct_total": 1.07,
+      "mediana": 8467.02,
+      "media": 11531.56,
+      "p25": 4063.75,
+      "p75": 15515.99,
+      "razao_vs_homem_branco": 1.3987
+    },
+    "masculino_branca": {
+      "n": 1096377,
+      "pct_total": 44.23,
+      "mediana": 6053.33,
+      "media": 9072.27,
+      "p25": 3228.64,
+      "p75": 11795.0,
+      "razao_vs_homem_branco": 1.0
+    },
+    "masculino_indigena": {
+      "n": 4324,
+      "pct_total": 0.17,
+      "mediana": 4765.93,
+      "media": 7646.96,
+      "p25": 2833.39,
+      "p75": 9729.72,
+      "razao_vs_homem_branco": 0.7873
+    },
+    "masculino_nao_identificado": {
+      "n": 29636,
+      "pct_total": 1.2,
+      "mediana": 4093.5,
+      "media": 7664.47,
+      "p25": 2517.96,
+      "p75": 8032.59,
+      "razao_vs_homem_branco": 0.6762
+    },
+    "masculino_parda": {
+      "n": 724915,
+      "pct_total": 29.24,
+      "mediana": 4154.29,
+      "media": 6270.45,
+      "p25": 2498.57,
+      "p75": 7688.86,
+      "razao_vs_homem_branco": 0.6863
+    },
+    "masculino_preta": {
+      "n": 135793,
+      "pct_total": 5.48,
+      "mediana": 4405.76,
+      "media": 6418.99,
+      "p25": 2646.56,
+      "p75": 7992.64,
+      "razao_vs_homem_branco": 0.7278
+    }
+  },
+  "uf": {
+    "SP": {
+      "total": 948454,
+      "pct_mulheres": 19.93,
+      "mediana_homens": 6290.62,
+      "mediana_mulheres": 6011.02,
+      "gap_mediano_pct": 4.44
+    },
+    "MG": {
+      "total": 257015,
+      "pct_mulheres": 18.7,
+      "mediana_homens": 4806.59,
+      "mediana_mulheres": 4232.62,
+      "gap_mediano_pct": 11.94
+    },
+    "RJ": {
+      "total": 217062,
+      "pct_mulheres": 17.32,
+      "mediana_homens": 5966.38,
+      "mediana_mulheres": 6046.74,
+      "gap_mediano_pct": -1.35
+    },
+    "PR": {
+      "total": 151692,
+      "pct_mulheres": 17.82,
+      "mediana_homens": 4690.99,
+      "mediana_mulheres": 4105.74,
+      "gap_mediano_pct": 12.48
+    },
+    "SC": {
+      "total": 150692,
+      "pct_mulheres": 18.96,
+      "mediana_homens": 4900.68,
+      "mediana_mulheres": 3985.68,
+      "gap_mediano_pct": 18.67
+    },
+    "RS": {
+      "total": 144789,
+      "pct_mulheres": 18.55,
+      "mediana_homens": 5162.06,
+      "mediana_mulheres": 4324.8,
+      "gap_mediano_pct": 16.22
+    },
+    "BA": {
+      "total": 79466,
+      "pct_mulheres": 16.38,
+      "mediana_homens": 3835.6,
+      "mediana_mulheres": 3781.57,
+      "gap_mediano_pct": 1.41
+    },
+    "DF": {
+      "total": 67059,
+      "pct_mulheres": 18.4,
+      "mediana_homens": 5926.67,
+      "mediana_mulheres": 6488.89,
+      "gap_mediano_pct": -9.49
+    },
+    "PE": {
+      "total": 62868,
+      "pct_mulheres": 18.3,
+      "mediana_homens": 3736.12,
+      "mediana_mulheres": 3831.07,
+      "gap_mediano_pct": -2.54
+    },
+    "CE": {
+      "total": 55174,
+      "pct_mulheres": 17.11,
+      "mediana_homens": 3382.62,
+      "mediana_mulheres": 3212.1,
+      "gap_mediano_pct": 5.04
+    },
+    "GO": {
+      "total": 53679,
+      "pct_mulheres": 17.52,
+      "mediana_homens": 3745.41,
+      "mediana_mulheres": 3473.28,
+      "gap_mediano_pct": 7.27
+    },
+    "ES": {
+      "total": 47628,
+      "pct_mulheres": 16.81,
+      "mediana_homens": 4782.83,
+      "mediana_mulheres": 3966.82,
+      "gap_mediano_pct": 17.06
+    },
+    "PA": {
+      "total": 41143,
+      "pct_mulheres": 15.11,
+      "mediana_homens": 3946.72,
+      "mediana_mulheres": 3844.31,
+      "gap_mediano_pct": 2.59
+    },
+    "MT": {
+      "total": 32417,
+      "pct_mulheres": 15.98,
+      "mediana_homens": 3792.28,
+      "mediana_mulheres": 3397.92,
+      "gap_mediano_pct": 10.4
+    },
+    "AM": {
+      "total": 27155,
+      "pct_mulheres": 17.67,
+      "mediana_homens": 4694.7,
+      "mediana_mulheres": 3664.21,
+      "gap_mediano_pct": 21.95
+    },
+    "MS": {
+      "total": 23513,
+      "pct_mulheres": 16.79,
+      "mediana_homens": 3951.03,
+      "mediana_mulheres": 3143.57,
+      "gap_mediano_pct": 20.44
+    },
+    "MA": {
+      "total": 22198,
+      "pct_mulheres": 15.67,
+      "mediana_homens": 3036.0,
+      "mediana_mulheres": 2531.45,
+      "gap_mediano_pct": 16.62
+    },
+    "RN": {
+      "total": 19515,
+      "pct_mulheres": 15.83,
+      "mediana_homens": 3282.22,
+      "mediana_mulheres": 2543.82,
+      "gap_mediano_pct": 22.5
+    },
+    "PB": {
+      "total": 17295,
+      "pct_mulheres": 18.46,
+      "mediana_homens": 2871.19,
+      "mediana_mulheres": 2584.76,
+      "gap_mediano_pct": 9.98
+    },
+    "SE": {
+      "total": 13303,
+      "pct_mulheres": 20.03,
+      "mediana_homens": 3141.17,
+      "mediana_mulheres": 2841.41,
+      "gap_mediano_pct": 9.54
+    },
+    "PI": {
+      "total": 12184,
+      "pct_mulheres": 20.17,
+      "mediana_homens": 2553.13,
+      "mediana_mulheres": 2240.31,
+      "gap_mediano_pct": 12.25
+    },
+    "AL": {
+      "total": 11574,
+      "pct_mulheres": 15.58,
+      "mediana_homens": 2857.3,
+      "mediana_mulheres": 2958.53,
+      "gap_mediano_pct": -3.54
+    },
+    "RO": {
+      "total": 8398,
+      "pct_mulheres": 14.98,
+      "mediana_homens": 2857.14,
+      "mediana_mulheres": 2442.06,
+      "gap_mediano_pct": 14.53
+    },
+    "TO": {
+      "total": 7443,
+      "pct_mulheres": 14.42,
+      "mediana_homens": 2912.7,
+      "mediana_mulheres": 2656.98,
+      "gap_mediano_pct": 8.78
+    },
+    "AC": {
+      "total": 2576,
+      "pct_mulheres": 18.75,
+      "mediana_homens": 2523.34,
+      "mediana_mulheres": 2724.24,
+      "gap_mediano_pct": -7.96
+    },
+    "AP": {
+      "total": 2569,
+      "pct_mulheres": 17.24,
+      "mediana_homens": 2518.24,
+      "mediana_mulheres": 2137.36,
+      "gap_mediano_pct": 15.13
+    },
+    "RR": {
+      "total": 1943,
+      "pct_mulheres": 16.06,
+      "mediana_homens": 2758.38,
+      "mediana_mulheres": 2576.39,
+      "gap_mediano_pct": 6.6
+    }
+  },
+  "small_cells": {
+    "cbo_uf_sexo": {
+      "total_combinacoes_com_dados": 3161,
+      "n_menor_10": 704,
+      "pct_menor_10": 22.27,
+      "recomendacao_lgpd": "Obrigatoriedade de supressão diferencial ou agregação regional quando n < 10"
+    }
+  },
+  "oaxaca_blinder_superior": {
+    "n_amostra": 60000,
+    "gap_total_log": 0.1609,
+    "gap_bruto_pct_equivalente": 17.45,
+    "parcela_explicada_dotacoes_pct": 28.61,
+    "parcela_inexplicada_discriminacao_pct": 71.39,
+    "gap_salario_liquido_discriminacao_pct": 12.17,
+    "r2_modelo_masculino": 0.2711,
+    "r2_modelo_feminino": 0.2989
+  },
+  "proposta_meta_r2": {
+    "r2_baseline_linear": 0.4327,
+    "r2_gradient_boosting": 0.5755,
+    "faixa_meta_recomendada": "[0.55, 0.65]",
+    "justificativa": "Microdados salariais individuais possuem teto econométrico intrínseco (unobserved heterogeneity: soft skills, negociação, nicho técnico). R² acima de 0.70 na RAIS individual indica vazamento de dados (data leakage) ou overfitting."
+  }
+}
