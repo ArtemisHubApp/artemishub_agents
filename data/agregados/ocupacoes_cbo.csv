@@ -183,12 +183,12 @@ cbo,cbo_nome,cbo_familia,cbo_familia_nome,n
 214220,Engenheiro civil (estruturas metálicas),2142,Engenheiros civis e afins,460
 201215,Especialista em ensaios metrológicos,2012,Profissionais da metrologia,458
 214740,Engenheiro de minas (projeto),2147,Engenheiros de minas e afins,450
-314825,Inspetor de dutos,3148,Especialistas em inspeções industriais,447
 214805,Engenheiro agrimensor,2148,Engenheiros agrimensores e engenheiros cartógrafos,447
+314825,Inspetor de dutos,3148,Especialistas em inspeções industriais,447
 201210,Especialista em calibrações metrológicas,2012,Profissionais da metrologia,446
 203015,Pesquisador em biologia de microorganismos e parasitas,2030,Pesquisadores das ciências biológicas,445
-214210,Engenheiro civil (aeroportos),2142,Engenheiros civis e afins,437
 213105,Físico,2131,Físicos,437
+214210,Engenheiro civil (aeroportos),2142,Engenheiros civis e afins,437
 311510,Técnico de meteorologia,3115,"Técnicos em controle ambiental, utilidades e tratamento de efluentes",422
 314830,Inspetor de controle dimensional,3148,Especialistas em inspeções industriais,420
 314720,Técnico de laminação em siderurgia,3147,Técnicos em siderurgia,395
@@ -203,8 +203,8 @@ cbo,cbo_nome,cbo_familia,cbo_familia_nome,n
 213315,Meteorologista,2133,Profissionais das ciências atmosféricas e espaciais e de astronomia,304
 213150,Físico (medicina),2131,Físicos,291
 318310,"Desenhista técnico (calefação, ventilação e refrigeração)",3183,"Desenhistas técnicos em eletricidade, eletrônica, eletromecânica, calefação, ventilação e refrigeração",266
-316330,Técnico em planejamento de lavra de minas,3163,Técnicos em mineração,259
 314725,Técnico de redução na siderurgia (primeira fusão),3147,Técnicos em siderurgia,259
+316330,Técnico em planejamento de lavra de minas,3163,Técnicos em mineração,259
 214530,Engenheiro químico (utilidades e meio ambiente),2145,Engenheiros químicos e afins,251
 214235,Engenheiro civil (hidrologia),2142,Engenheiros civis e afins,245
 316320,Técnico em pesquisa mineral,3163,Técnicos em mineração,243
@@ -225,8 +225,8 @@ cbo,cbo_nome,cbo_familia,cbo_familia_nome,n
 211215,Estatístico teórico,2112,Profissionais de estatística e afins,141
 214735,Engenheiro de minas (processo),2147,Engenheiros de minas e afins,140
 318215,Desenhista técnico naval,3182,Desenhistas técnicos da mecânica,127
-214535,Tecnólogo em produção sulcroalcooleira,2145,Engenheiros químicos e afins,126
 214515,"Engenheiro químico (mineração, metalurgia, siderurgia, cimenteira e cerâmica)",2145,Engenheiros químicos e afins,126
+214535,Tecnólogo em produção sulcroalcooleira,2145,Engenheiros químicos e afins,126
 214715,Engenheiro de minas (lavra a céu aberto),2147,Engenheiros de minas e afins,119
 203025,Pesquisador em biologia vegetal,2030,Pesquisadores das ciências biológicas,118
 201105,Bioengenheiro,2011,Profissionais da biotecnologia,115
@@ -237,10 +237,10 @@ cbo,cbo_nome,cbo_familia,cbo_familia_nome,n
 203120,Pesquisador em matemática,2031,Pesquisadores das ciências naturais e exatas,82
 214415,Engenheiro mecânico (energia nuclear),2144,Engenheiros mecânicos e afins,77
 203115,Pesquisador em física,2031,Pesquisadores das ciências naturais e exatas,76
-314625,Tecnólogo em soldagem,3146,Técnicos em metalurgia (estruturas metálicas),63
 201225,Especialista em materiais de referência metrológica,2012,Profissionais da metrologia,63
-316335,Desincrustador (poços de petróleo),3163,Técnicos em mineração,62
+314625,Tecnólogo em soldagem,3146,Técnicos em metalurgia (estruturas metálicas),63
 213435,Petrógrafo,2134,"Geólogos, oceanógrafos, geofísicos e afins",62
+316335,Desincrustador (poços de petróleo),3163,Técnicos em mineração,62
 214250,Engenheiro civil (portos e vias navegáveis),2142,Engenheiros civis e afins,55
 316105,Técnico em geofísica,3161,Técnicos em geologia,51
 201115,Geneticista,2011,Profissionais da biotecnologia,46
@@ -254,16 +254,16 @@ cbo,cbo_nome,cbo_familia,cbo_familia_nome,n
 214720,Engenheiro de minas (lavra subterrânea),2147,Engenheiros de minas e afins,21
 316340,Cimentador (poços de petróleo),3163,Técnicos em mineração,20
 214540,Engenheiro têxtil,2145,Engenheiros químicos e afins,15
-214265,Engenheiro civil (túneis),2142,Engenheiros civis e afins,12
 213175,Físico (térmica),2131,Físicos,12
+214265,Engenheiro civil (túneis),2142,Engenheiros civis e afins,12
 213135,Físico (instrumentação),2131,Físicos,11
 214750,Tecnólogo em rochas ornamentais,2147,Engenheiros de minas e afins,10
 213125,Físico (estatística e matemática),2131,Físicos,8
 213160,Físico (óptica),2131,Físicos,8
-213115,Físico (atômica e molecular),2131,Físicos,7
 213110,Físico (acústica),2131,Físicos,7
-213430,Paleontólogo,2134,"Geólogos, oceanógrafos, geofísicos e afins",6
+213115,Físico (atômica e molecular),2131,Físicos,7
 213145,Físico (materiais),2131,Físicos,6
+213430,Paleontólogo,2134,"Geólogos, oceanógrafos, geofísicos e afins",6
 213170,Físico (plasma),2131,Físicos,5
 213310,Geofísico espacial,2133,Profissionais das ciências atmosféricas e espaciais e de astronomia,4
 213120,Físico (cosmologia),2131,Físicos,2

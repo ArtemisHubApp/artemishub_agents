@@ -63,6 +63,18 @@ uv run python -m src.agentes.demo    # protótipo multiagente com a pergunta da 
 uv run python -m src.agentes.chat    # conversa com os agentes pelo terminal (/passos, /esquecer, /ajuda, /sair)
 ```
 
+### Baixar os dados da RAIS
+
+Os arquivos detalhados da RAIS são armazenados no DagsHub pelo DVC. Instale as dependências com suporte S3 usando `uv sync --dev` e configure credenciais locais com acesso de leitura às variáveis `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` antes de executar `uv run dvc pull`. A URL e o endpoint S3 ficam em `.dvc/config`; nunca coloque credenciais nesse arquivo.
+
+O Parquet e o JSON podem ser baixados individualmente com:
+
+```bash
+uv run dvc pull data/processed/rais_stem_2025_brasil.parquet.dvc data/processed/rais_stem_2025_brasil.json.dvc
+```
+
+Para reproduzir os agregados de 2025, execute `uv run python -m src.salarios gerar --ano 2025`.
+
 O prompt da Análise mora só no Langfuse (`artemis/analise-rascunho`, label `production`), nunca no repo. Por isso o LLM só é usado com as chaves do LLM e do Langfuse; sem elas, a Análise usa um rascunho padrão (sem LLM) e não há rastreio, e a demo roda mesmo assim. Detalhes, fluxo e o que aparece no Langfuse: [docs/multiagentes.md](docs/multiagentes.md).
 
 ## 🧠 Desenvolvimento orientado a spec (SDD)

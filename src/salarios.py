@@ -80,7 +80,7 @@ def listar_ocupacoes(dados):
     ocupacoes = (dados.dropna(subset=["cbo_nome"])
                  .groupby(["cbo", "cbo_nome", "cbo_familia", "cbo_familia_nome"]).size()
                  .rename("n").reset_index())
-    return ocupacoes.sort_values("n", ascending=False).reset_index(drop=True)
+    return ocupacoes.sort_values(["n", "cbo"], ascending=[False, True]).reset_index(drop=True)
 
 
 def gerar(ano, parquet=None, destino=AGREGADOS, n_minimo=N_MINIMO):

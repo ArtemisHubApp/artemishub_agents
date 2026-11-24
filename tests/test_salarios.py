@@ -95,3 +95,16 @@ def test_busca_ocupacao_sem_acento_e_por_palavras():
     assert achadas[1]["cbo"] == "317110"            # só "sistemas" bate
     assert buscar_ocupacao("informacao", ocupacoes)[0]["cbo"] == "317110"
     assert buscar_ocupacao("de", ocupacoes) == []
+
+
+def test_lista_ocupacoes_desempata_por_cbo_crescente():
+    dados = pd.concat([
+        vinculos("2124", "DF", "feminino", 10, 7000, cbo="212405", nome="Analista"),
+        vinculos("3171", "DF", "feminino", 10, 4000, cbo="317110", nome="Desenvolvedor"),
+        vinculos("9000", "DF", "feminino", 20, 5000, cbo="900001", nome="Ocupação mais frequente"),
+        vinculos("9000", "DF", "feminino", 19, 3000, cbo="900002", nome="Segunda mais frequente"),
+    ], ignore_index=True)
+
+    ocupacoes = listar_ocupacoes(dados)
+
+    assert ocupacoes["cbo"].tolist() == ["900001", "900002", "212405", "317110"]
