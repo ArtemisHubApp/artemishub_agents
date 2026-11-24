@@ -117,9 +117,9 @@ O **Requisito Funcional RF-08** estabelece:
 
 ### 4.1. Decomposição de Oaxaca-Blinder (Nível Superior)
 
-A decomposição econométrica de Oaxaca-Blinder separa a diferença salarial em escala logarítmica entre a parcela explicada por atributos produtivos e a parcela não explicada (discriminação pura e teto de vidro):
+A decomposição econométrica de Oaxaca-Blinder separa a diferença salarial em escala logarítmica entre a parcela explicada por atributos produtivos observados na RAIS e a parcela não explicada (compatível com discriminação, mas não só — pois também engloba variáveis omitidas na base, como experiência real prévia, fluência em idiomas, especialização técnica e poder de negociação):
 
-$$\Delta \ln(\bar{W}) = \underbrace{\sum \hat{\beta}_H (\bar{X}_H - \bar{X}_M)}_{\text{Parcela Explicada (Dotações)}} + \underbrace{\sum \bar{X}_M (\hat{\beta}_H - \hat{\beta}_M) + (\hat{\alpha}_H - \hat{\alpha}_M)}_{\text{Parcela Não Explicada (Discriminação Pura / Teto de Vidro)}}$$
+$$\Delta \ln(\bar{W}) = \underbrace{\sum \hat{\beta}_H (\bar{X}_H - \bar{X}_M)}_{\text{Parcela Explicada (Dotações)}} + \underbrace{\sum \bar{X}_M (\hat{\beta}_H - \hat{\beta}_M) + (\hat{\alpha}_H - \hat{\alpha}_M)}_{\text{Parcela Não Explicada (Compatível com Discriminação e Variáveis Omitidas)}}$$
 
 Controlando simultaneamente por **área STEM, UF, idade, tempo de emprego na empresa (meses) e horas semanais contratuais**:
 
@@ -127,12 +127,12 @@ Controlando simultaneamente por **área STEM, UF, idade, tempo de emprego na emp
 |---|:---:|
 | **Gap Salarial Total em Escala Log ($\Delta \ln W$)** | **0,1609** (equivalente a 17,45% bruto) |
 | **Parcela Explicada por Dotações de Produtividade** | **28,61%** do gap total |
-| **Parcela Inexplicada (Discriminação / Retornos Assimétricos)** | **71,39%** do gap total |
-| **Gap Salarial Líquido Inexplicado** | **12,17%** |
+| **Parcela Não Explicada (Compatível com Discriminação, mas não só)** | **71,39%** do gap total |
+| **Gap Salarial Líquido Não Explicado** | **12,17%** |
 | **$R^2$ Equação Homens / Mulheres** | 0,2711 / 0,2989 |
 
 #### Conclusão Científica para o RF-08:
-Mesmo isolando a área de atuação, a UF, a senioridade (tempo de casa e idade) e a jornada semanal, **71,39% da disparidade salarial no nível superior permanece sem explicação técnica**, correspondendo a uma perda salarial líquida de **12,17%** unicamente atribuível ao fator gênero.
+Mesmo isolando a área de atuação, a UF, a senioridade (tempo de casa e idade) e a jornada semanal, **71,39% da disparidade salarial no nível superior permanece sem explicação pelas variáveis observadas na RAIS**, correspondendo a uma diferença salarial líquida não explicada de **12,17%** (compatível com discriminação e teto de vidro, mas também sujeita a variáveis omitidas na base).
 
 ---
 
