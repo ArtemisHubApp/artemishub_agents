@@ -357,7 +357,8 @@ def test_variaveis_do_prompt_tem_exatamente_as_chaves_do_langfuse():
 def test_variaveis_trazem_numeros_formatados_e_a_referencia_para_negociar():
     dados = variaveis_do_prompt(_pedido())["dados_salariais"]
     assert "R$ 7.000,00" in dados and "R$ 8.462,79" in dados
-    assert "Referência provisória para negociar" in dados and "R$ 8.462,79" in dados.split("Referência")[1]
+    referencia = next(linha for linha in dados.splitlines() if linha.startswith("Referência provisória"))
+    assert "mediana geral" in referencia and "R$ 8.178,72" in referencia and "R$ 8.462,79" not in referencia
 
 
 def test_variaveis_trazem_evidencias_com_id_e_correcao_so_quando_reprovado():
@@ -374,3 +375,12 @@ def test_variavel_ocupacao_so_quando_encontrada():
                               DADOS, [])
     assert "Cientista de dados" in variaveis_do_prompt(pedido)["ocupacao"]
     assert variaveis_do_prompt(_pedido())["ocupacao"] == ""
+
+
+def test_variaveis_ocupacao_e_correcao_sao_so_dado_sem_instrucao():
+    pedido = PedidoDeRascunho(PERGUNTA_DEMO, Intencao(True, False),
+                              Parametros("cientista dados", "2112", "Estatística", "BR", None,
+                                         ocupacao="Cientista de dados"),
+                              DADOS, [], motivo_reprovacao="parágrafo 2 sem citação")
+    variaveis = variaveis_do_prompt(pedido)
+    assert variaveis["ocupacao"] == "Cientista de dados" and variaveis["correcao"] == "parágrafo 2 sem citação"

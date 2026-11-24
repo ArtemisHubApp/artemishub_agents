@@ -13,11 +13,10 @@ from __future__ import annotations
 import argparse
 import os
 from collections.abc import Callable
-from pathlib import Path
 
 from dotenv import load_dotenv
 
-from src.agentes.adapters.rag_subprocesso import RAIZ_AGENTS, BuscadorRagSubprocesso
+from src.agentes.adapters.rag_pacote import RAIZ_AGENTS, BuscadorArtemisRag, diretorio_do_rag
 from src.agentes.adapters.rastreio import AMBIENTES, configurar_ambiente, criar_rastreador, rastrear_pergunta
 from src.agentes.adapters.salarios_rais import ConsultaRais
 from src.agentes.application.grafo import Estado, construir_grafo
@@ -29,8 +28,7 @@ PERGUNTA_DEMO = ("Quanto ganha uma analista de sistemas no DF, qual a diferença
 
 def carregar_ambiente() -> None:
     load_dotenv(RAIZ_AGENTS / ".env")
-    rag_dir = Path(os.getenv("ARTEMIS_RAG_DIR", RAIZ_AGENTS.parent / "artemishub_rag"))
-    load_dotenv(rag_dir / ".env")  # não sobrescreve o que já veio do agents ou do shell
+    load_dotenv(diretorio_do_rag() / ".env")  # não sobrescreve o que já veio do agents ou do shell
 
 
 Responder = Callable[[str], tuple[Estado, str | None]]
@@ -43,13 +41,13 @@ def montar(sessao: str | None = None, interface: str = "demo",
 
     rastreador = criar_rastreador()
     redator = redator_de_ambiente()
-    buscador = BuscadorRagSubprocesso.de_ambiente()
+    buscador = BuscadorArtemisRag.de_ambiente()
     grafo = construir_grafo(buscador, ConsultaRais(), redator, rastreador, memoria=memoria)
     contexto = {
         "interface": interface,
         "redator": type(redator).__name__,
         "modelo": os.getenv("LLM_MODEL", "") if isinstance(redator, RedatorLLM) else "rascunho-padrao",
-        "rag": "subprocesso-parcial" if buscador.parcial else "subprocesso",
+        "rag": "pacote-parcial" if buscador.parcial else "pacote",
         "prompt_label": os.getenv("LANGFUSE_PROMPT_LABEL", "production"),
     }
 

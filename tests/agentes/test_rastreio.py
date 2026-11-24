@@ -15,7 +15,7 @@ from src.agentes.adapters.rastreio import (
 from tests.agentes.test_grafo import RUIM, RedatorFake, _rodar
 
 CONTEXTO = {"interface": "chat", "redator": "RedatorLLM", "modelo": "gemini-3.5-flash-lite",
-            "rag": "subprocesso", "prompt_label": "production"}
+            "rag": "pacote", "prompt_label": "production"}
 
 
 def test_ambientes_permitidos():
