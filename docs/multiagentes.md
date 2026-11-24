@@ -200,14 +200,14 @@ O texto dos prompts de LLM não fica no repositório, que é público: mora só 
 
 | Prompt | Tipo | Variáveis | Quem usa |
 |---|---|---|---|
-| `artemis/analise-rascunho` | chat | `pergunta`, `ocupacao`, `dados_salariais`, `evidencias`, `correcao` | Análise (síntese) |
+| `artemis/analise-resposta` | chat | `pergunta`, `ocupacao`, `dados_salariais`, `evidencias`, `correcao` | Análise (síntese) |
 
 - O código busca o prompt pelo label (`LANGFUSE_PROMPT_LABEL`, padrão `production`) e monta só as variáveis. A generation `redigir-rascunho` fica ligada ao nome e à versão do prompt no trace.
 - Para mudar o prompt: crie uma nova versão no Langfuse, teste com outro label (por exemplo `staging`, com `LANGFUSE_PROMPT_LABEL=staging`) e só então mova o label `production`. Não precisa de deploy.
 - Sem Langfuse ou sem o prompt, a Análise usa o rascunho padrão (sem LLM), nunca uma cópia do prompt. Um teste (`tests/agentes/test_seguranca.py`) falha se texto de prompt aparecer em `src/`.
 - Versões antigas do prompt continuam no histórico do git (commits anteriores a esta mudança).
 
-**Enquadramento atual (versão 1):** a mediana dos homens na mesma ocupação e UF aparece como referência provisória para negociar; a mediana das mulheres, como o retrato do mercado, que carrega a desigualdade. O sexo da usuária nunca muda a referência. Base científica e decisões em aberto no relatório de vieses do projeto; a referência definitiva virá do modelo salarial (#4, #5).
+**Enquadramento atual:** a mediana geral da ocupação e UF é a referência provisória para negociar, a mesma para qualquer pessoa, e não é um teto; as medianas de homens e mulheres entram só como comparação. Motivo: em Roussille (QJE, 2024), mostrar a mediana de candidatos semelhantes fechou a diferença no salário pedido numa plataforma dos EUA. É uma escolha provisória, sem evidência para o Brasil; a referência definitiva virá do modelo salarial (#4, #5).
 
 ## Limitações conhecidas
 
