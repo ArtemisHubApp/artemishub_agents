@@ -1,8 +1,6 @@
-"""Adaptadores: RAG por subprocesso (com executor falso), RAIS real (CSVs versionados) e redatores."""
+"""Adaptadores: pacote artemis_rag (busca falsa e pacote sem índice), RAIS real (CSVs versionados) e redatores."""
 
-import json
-import subprocess
-
+import artemis_rag
 import httpx
 import openai
 import pytest
@@ -11,7 +9,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableLambda
 
 from src.agentes.adapters.llm import RedatorLLM, RedatorPadrao, redator_de_ambiente
-from src.agentes.adapters.rag_subprocesso import MARCADOR, BuscadorRagSubprocesso
+from src.agentes.adapters.rag_pacote import BuscadorArtemisRag
 from src.agentes.adapters.rastreio import criar_rastreador, rastrear_pergunta
 from src.agentes.adapters.salarios_rais import ConsultaRais
 from src.agentes.application.grafo import construir_grafo
@@ -20,55 +18,52 @@ from src.agentes.domain.modelos import Evidencia, Intencao, Parametros, PedidoDe
 from tests.agentes.test_dominio import DADOS, EVIDENCIAS, PERGUNTA_DEMO
 from tests.agentes.test_grafo import BuscadorFake, ConsultaFake, RedatorFake
 
-ACHADO = {"id": "FONTE 1", "titulo": "Lei 14.611/2023", "url": "https://planalto.gov.br/l14611", "pagina": None,
-          "artigo": "art. 2", "texto": "A igualdade salarial..."}
+
+def _evidencia_rag(n):
+    return artemis_rag.Evidencia(id=f"FONTE {n}", titulo="Lei 14.611/2023", url="https://planalto.gov.br/l14611",
+                                 pagina=None, artigo="art. 2", texto="A igualdade salarial...", distancia=0.4)
 
 
-class ExecutorFake:
-    def __init__(self, stdout="", returncode=0, stderr="", erro=None):
-        self.stdout, self.returncode, self.stderr, self.erro, self.chamadas = stdout, returncode, stderr, erro, []
+def test_rag_converte_as_evidencias_do_pacote_para_o_dominio(tmp_path):
+    chamadas = []
 
-    def __call__(self, comando, **kwargs):
-        self.chamadas.append((comando, kwargs))
-        if self.erro:
-            raise self.erro
-        return subprocess.CompletedProcess(comando, self.returncode, self.stdout, self.stderr)
+    def buscar(tema, **opcoes):
+        chamadas.append((tema, opcoes))
+        return [_evidencia_rag(1), _evidencia_rag(2)]
 
-
-def _buscador(executor, tmp_path, parcial=False):
-    return BuscadorRagSubprocesso(tmp_path, parcial=parcial, executar=executor)
+    evidencias = BuscadorArtemisRag(tmp_path, parcial=True, buscar=buscar).buscar("igualdade salarial", 2)
+    assert chamadas == [("igualdade salarial", {"top_k": 2, "indice": tmp_path, "parcial": True})]
+    assert evidencias == [Evidencia(f"FONTE {n}", "Lei 14.611/2023", "https://planalto.gov.br/l14611", None, "art. 2",
+                                    "A igualdade salarial...") for n in (1, 2)]
 
 
-def test_rag_le_o_json_marcado_e_ignora_ruido(tmp_path):
-    executor = ExecutorFake(stdout=f"Loading weights 100%\n{MARCADOR}{json.dumps([ACHADO])}\n")
-    assert _buscador(executor, tmp_path).buscar("igualdade salarial", 5) == [Evidencia(**ACHADO)]
+@pytest.mark.parametrize("tipo", [artemis_rag.IndiceIndisponivel, ValueError, OSError, RuntimeError])
+def test_rag_transforma_falha_em_fonte_indisponivel(tmp_path, tipo):
+    def buscar(tema, **opcoes):
+        raise tipo("No published index")
+
+    with pytest.raises(FonteIndisponivel, match="No published index"):
+        BuscadorArtemisRag(tmp_path, buscar=buscar).buscar("x", 5)
 
 
-def test_rag_roda_no_ambiente_do_rag_com_a_pergunta_no_stdin(tmp_path):
-    executor = ExecutorFake(stdout=f"{MARCADOR}[]")
-    _buscador(executor, tmp_path, parcial=True).buscar("igualdade salarial", 3)
-    comando, kwargs = executor.chamadas[0]
-    assert comando[:4] == ["uv", "run", "--project", str(tmp_path)] and kwargs["cwd"] == tmp_path
-    assert json.loads(kwargs["input"]) == {"tema": "igualdade salarial", "top_k": 3, "parcial": True}
+def test_rag_real_sem_indice_publicado_vira_fonte_indisponivel(tmp_path):
+    with pytest.raises(FonteIndisponivel):  # pacote de verdade, sem rede: falha antes de carregar o modelo
+        BuscadorArtemisRag(tmp_path).buscar("igualdade salarial", 5)
 
 
-@pytest.mark.parametrize("executor, trecho", [
-    (ExecutorFake(returncode=1, stderr="Traceback...\nValueError: No published index"), "No published index"),
-    (ExecutorFake(stdout="sem marcador"), "saída sem resultado"),
-    (ExecutorFake(stdout=f"{MARCADOR}{{quebrado"), "JSON inválido"),
-    (ExecutorFake(erro=FileNotFoundError("uv")), "uv não encontrado"),
-    (ExecutorFake(erro=subprocess.TimeoutExpired(["uv"], 180)), "demorou mais de"),
-])
-def test_rag_transforma_falha_em_fonte_indisponivel(tmp_path, executor, trecho):
-    with pytest.raises(FonteIndisponivel, match=trecho):
-        _buscador(executor, tmp_path).buscar("x", 5)
-
-
-def test_rag_de_ambiente_usa_a_variavel(tmp_path, monkeypatch):
-    monkeypatch.setenv("ARTEMIS_RAG_DIR", str(tmp_path))
+def test_rag_de_ambiente_prefere_o_indice_explicito(tmp_path, monkeypatch):
+    monkeypatch.setenv("ARTEMIS_RAG_INDEX_DIR", str(tmp_path / "indice"))
     monkeypatch.setenv("ARTEMIS_RAG_PARCIAL", "1")
-    buscador = BuscadorRagSubprocesso.de_ambiente()
-    assert buscador.rag_dir == tmp_path and buscador.parcial is True
+    buscador = BuscadorArtemisRag.de_ambiente()
+    assert buscador.indice == tmp_path / "indice" and buscador.parcial is True
+
+
+def test_rag_de_ambiente_usa_o_indice_do_repo_do_rag_por_padrao(tmp_path, monkeypatch):
+    monkeypatch.delenv("ARTEMIS_RAG_INDEX_DIR", raising=False)
+    monkeypatch.delenv("ARTEMIS_RAG_PARCIAL", raising=False)
+    monkeypatch.setenv("ARTEMIS_RAG_DIR", str(tmp_path))
+    buscador = BuscadorArtemisRag.de_ambiente()
+    assert buscador.indice == tmp_path / ".chroma" and buscador.parcial is False
 
 
 def test_consulta_rais_usa_os_agregados_versionados():

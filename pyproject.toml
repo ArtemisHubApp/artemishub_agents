@@ -3,6 +3,7 @@ name = "artemishub-agents"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "artemishub-rag",
     "langchain-openai>=1.8.3",
     "langfuse>=5.2.0",
     "langgraph>=1.2.23",
@@ -31,3 +32,6 @@ extend-exclude = [".claude"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.uv.sources]
+artemishub-rag = { git = "https://github.com/ArtemisHubApp/artemishub_rag", rev = "a4eb635f9c62b4749fff09ac2da6fa82d061a926" }
