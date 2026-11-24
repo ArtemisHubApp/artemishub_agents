@@ -169,7 +169,7 @@ uv run python -m src.agentes.chat
 
 **Memória da conversa:** o chat lembra só a intenção, a ocupação (família da CBO) e a UF da última pergunta atendida, para que "e no DF?" ou "e quanto ganha uma analista de sistemas?" continuem o assunto. Não guarda o valor do salário, o sexo, a raça nem a origem, e não envia histórico ao LLM: memória com dados pessoais é vetor de viés em conselhos salariais (relatório de vieses). A memória dura só enquanto o chat está aberto (porta `MemoriaDaConversa`, adaptador `MemoriaEmProcesso`); guardar conversas no Postgres depende da arquitetura do backend e da decisão de LGPD. No Langfuse, cada pergunta é um trace e a conversa inteira é uma sessão (`chat-…`), visível na tela Sessions.
 
-Pré-requisito: o índice do `artemishub_rag` publicado (`uv run python -m src.pipeline` no rag). A Pesquisa roda o Retriever do rag no ambiente dele (`uv run --project`), porque os dois repos usam o pacote `src` (troca para import quando a rag#23 sair). Numa worktree, aponte `ARTEMIS_RAG_DIR` para o rag.
+Pré-requisito: o índice publicado. O pacote `artemis_rag` é dependência fixada por commit no `pyproject.toml`, mas não traz o índice nem os dados: gere-o num checkout do rag (`uv run python -m artemis_rag.pipeline`). A Pesquisa procura o índice em `ARTEMIS_RAG_INDEX_DIR` ou, se vazia, no `.chroma` de `ARTEMIS_RAG_DIR` (padrão `../artemishub_rag`). `EMBEDDING_MODEL` e `EMBEDDING_REVISION` precisam ser os do índice (o padrão já é). A primeira busca baixa o modelo do Hugging Face. Sem índice, a Pesquisa registra a falha e o fluxo segue sem fontes jurídicas.
 
 ### Rastreio no Langfuse
 
@@ -215,7 +215,7 @@ O texto dos prompts de LLM não fica no repositório, que é público: mora só 
 - **Valores das evidências:** um valor em R$ ou percentual que aparece em qualquer trecho recuperado é aceito em qualquer parágrafo, mesmo que aquele trecho não seja citado ali.
 - **Ocupação:** `buscar_ocupacao` acha a ocupação por palavras do nome na CBO. Erros de digitação são corrigidos pela palavra mais parecida dos nomes da CBO ("cientsita" → "cientista"). Termos que não estão nos nomes oficiais ("engenheira de software") podem cair numa ocupação parecida; o passo a passo mostra qual ocupação e família foram usadas.
 - **Guardrail:** é uma lista de padrões, não um classificador. Tentativas de injeção reescritas podem passar; a defesa é em camadas (dados entre delimitadores, roteamento em código e Validação).
-- **Latência:** medida em 19/11 com cache quente, a pergunta da demonstração leva cerca de 25 s: o Gemini (`gemini-3.5-flash-lite`) leva 13 s e a busca no RAG 6,5 s, porque o subprocesso carrega o modelo de embeddings a cada pergunta. Pergunta só de salário leva cerca de 11 s. A primeira execução da máquina leva mais de 1 minuto (download e carga do modelo). A meta do PDR é de até 10 s: o import direto do RAG (#37) e uma API que mantém o modelo carregado (#36) devem resolver a parte do RAG.
+- **Latência:** com o pacote `artemis_rag` no mesmo processo, medido em 24/11 com cache quente, a primeira busca leva cerca de 4 s (carrega o modelo) e as seguintes 0,07 s; antes, por subprocesso, cada busca levava 6,5 s. O Gemini (`gemini-3.5-flash-lite`) levou 13 s nas medições de 19/11 e é o que resta acima da meta de 10 s do PDR. A primeira execução na máquina é mais lenta (download e carga do modelo).
 - **Delimitadores do prompt:** um trecho do RAG que contenha `</evidencias>` fecha a tag antes da hora.
 
 ## Próximas etapas
