@@ -18,7 +18,7 @@ from src.agentes.domain.modelos import PedidoDeRascunho
 from src.agentes.domain.rascunho import rascunho_padrao, variaveis_do_prompt
 
 NOME_GERACAO = "redigir-rascunho"
-NOME_PROMPT = "artemis/analise-rascunho"
+NOME_PROMPT = "artemis/analise-resposta"
 log = logging.getLogger(__name__)
 
 

@@ -7,7 +7,7 @@ from src.agentes.domain.modelos import DadosSalariais, PedidoDeRascunho
 
 LIMITE_TRECHO = 280
 
-# Variáveis do prompt chat `artemis/analise-rascunho` no Langfuse ({{pergunta}}, {{ocupacao}}...).
+# Variáveis do prompt chat `artemis/analise-resposta` no Langfuse ({{pergunta}}, {{ocupacao}}...).
 VARIAVEIS_DO_PROMPT = ("pergunta", "ocupacao", "dados_salariais", "evidencias", "correcao")
 
 
@@ -28,10 +28,9 @@ def _linhas_salariais(dados: DadosSalariais | None) -> list[str]:
     if diferenca is not None:
         sentido = "abaixo" if diferenca > 0 else "acima"
         linhas.append(f"Diferença bruta entre as medianas de mulheres e homens: {pct(diferenca)} ({sentido} delas).")
-    homens = dados["por_sexo"].get("masculino")
-    if homens:
-        linhas.append(f"Referência provisória para negociar (mediana dos homens nesta ocupação e UF): "
-                      f"{brl(homens['p50'])}.")
+    geral = dados["por_sexo"].get("todos")
+    if geral:
+        linhas.append(f"Referência provisória para negociar (mediana geral nesta ocupação e UF): {brl(geral['p50'])}.")
     informado = dados.get("salario_informado")
     if informado:
         linhas.append(f"Salário informado: {brl(informado['valor'])}.")
@@ -50,15 +49,12 @@ def variaveis_do_prompt(pedido: PedidoDeRascunho) -> dict[str, str]:
         + f"\n{e.texto[:1200]}"
         for e in pedido.evidencias
     ) or "Nenhuma evidência recuperada."
-    ocupacao = pedido.parametros.ocupacao
-    motivo = pedido.motivo_reprovacao
     return {
         "pergunta": pedido.pergunta,
-        "ocupacao": (f"Ocupação encontrada na CBO: {ocupacao}. Fale dela pelo nome; os números são do grupo da CBO "
-                     "dela.\n\n") if ocupacao else "",
+        "ocupacao": pedido.parametros.ocupacao or "",
         "dados_salariais": "\n".join(_linhas_salariais(pedido.dados_salariais)),
         "evidencias": evidencias,
-        "correcao": f"\n\nA versão anterior foi reprovada pela Validação. Corrija isto: {motivo}" if motivo else "",
+        "correcao": pedido.motivo_reprovacao or "",
     }
 
 
