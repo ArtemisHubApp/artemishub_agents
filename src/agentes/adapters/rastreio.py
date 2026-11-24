@@ -62,7 +62,7 @@ def atributos_do_trace(contexto: Contexto, sessao: str | None) -> dict[str, Any]
 
 
 def metadata_do_resultado(estado: Estado) -> dict[str, Any]:
-    """O que aconteceu na pergunta, sem dado pessoal: nada do valor do salário informado."""
+    """O que aconteceu na pergunta, sem repetir o valor do salário informado (ele já está na entrada do trace)."""
     validacao, intencao, parametros = estado.get("validacao"), estado.get("intencao"), estado.get("parametros")
     dados = estado.get("dados_salariais") or {}
     return {

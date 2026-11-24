@@ -10,7 +10,7 @@ from src.agentes.domain.modelos import DadosSalariais, Evidencia, Lembranca, Ped
 
 
 class FonteIndisponivel(RuntimeError):
-    """O RAG não respondeu (sem índice, subprocesso falhou ou saída inválida)."""
+    """O RAG não respondeu (sem índice publicado, modelo diferente do índice ou falha ao carregar)."""
 
 
 class BuscadorDeDireitos(Protocol):
