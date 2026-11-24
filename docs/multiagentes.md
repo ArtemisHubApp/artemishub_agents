@@ -36,7 +36,7 @@ flowchart TB
 
     PES -.->|retrieve| RAG[("artemishub_rag<br/>busca híbrida com citações")]
     ANA -.->|consulta| RAIS[("Medianas RAIS STEM 2025<br/>por CBO, UF e sexo")]
-    ORQ -.-> LLM[("LLM<br/>Gemini via API compatível OpenAI")]
+    ANA -.->|rascunho| LLM[("LLM<br/>provedor configurável")]
     ORQ --> R([Resposta com citações e fontes])
 ```
 
@@ -45,7 +45,7 @@ flowchart TB
 | Agentes | este repositório, `src/agentes/` (`domain`, `application`, `adapters`) | orquestração e os três especialistas |
 | Base de direitos | [artemishub_rag](https://github.com/ArtemisHubApp/artemishub_rag) | busca híbrida (vetorial + BM25) e validação de citações |
 | Dados salariais | `data/processed/rais_stem_2025_brasil.parquet` (DVC) | origem das medianas e percentis; ver [dicionário de dados](dicionario_dados_rais.md) |
-| LLM | provedor externo, via `llm_client` | interpretar a pergunta, sintetizar e reescrever |
+| LLM | provedor configurável no `.env` (API compatível com a da OpenAI; só o Gemini foi testado) | escrever o rascunho da Análise; se falhar, entra o rascunho padrão, sem LLM |
 
 O LLM nunca calcula números. Valores salariais vêm só da ferramenta de consulta à RAIS, e o LLM apenas os explica.
 
