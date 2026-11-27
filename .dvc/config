@@ -1,0 +1,6 @@
+[core]
+    remote = dagshub
+
+[remote "dagshub"]
+    url = s3://dvc
+    endpointurl = https://dagshub.com/CamilaSilvaC/artemishub-rais-dvc.s3

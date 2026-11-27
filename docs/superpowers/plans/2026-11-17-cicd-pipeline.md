@@ -126,31 +126,29 @@ jobs:
 
 ### Tarefa 4: remote do DVC e checagem das tabelas agregadas
 
-**Decisão (17/11/2026):** o remote do DVC é o **DagsHub** (plano gratuito, 10 GB, sem cartão). Ele foi feito para DVC, cada pessoa usa o próprio login e o CI só precisa de um token. Alternativas avaliadas: Google Drive (conta de serviço não tem cota, então não consegue fazer `dvc push`), Cloudflare R2 e S3/GCS (pedem cartão). Hoje `.dvc/config` está vazio: sem remote, nenhum outro computador (nem o CI) consegue baixar o parquet.
+**Decisão (17/11/2026, configurada na issue #34):** o remote de objetos DVC fica no DagsHub, usando o endpoint S3. `.dvc/config` versiona `s3://dvc` e o endpoint do projeto; credenciais ficam fora do Git. Pessoas e CI usam as chaves S3 do DagsHub com acesso apropriado. Alternativas avaliadas: Google Drive (conta de serviço não tem cota, então não consegue fazer `dvc push`), Cloudflare R2 e S3/GCS (pedem cartão).
 
 **Responsável:** Camila (Engenharia de Dados · DevOps).
 
 **Arquivos:**
-- Modificar: `.dvc/config` (remote padrão, só a URL)
+- Modificar: `.dvc/config` (remote padrão e endpoint S3, sem credenciais)
 - Modificar: `README.md` (como baixar os dados)
 - Criar: `.github/workflows/data.yml`
 
-- [ ] **Passo 1:** no DagsHub, criar o repositório conectado ao GitHub (New Repository → Connect a repository → GitHub → `ArtemisHubApp/artemishub_agents`) e dar acesso de escrita a quem roda o pipeline da RAIS.
-- [ ] **Passo 2:** configurar o remote. A URL vai para o git e o login fica em `.dvc/config.local`, que não é commitado:
+- [x] **Passo 1:** criar o repositório DagsHub privado de armazenamento S3 e conceder acesso a quem mantém os dados.
+- [x] **Passo 2:** versionar o remote S3 e o endpoint em `.dvc/config`; manter as chaves de autenticação fora do Git:
 
 ```bash
-uv run dvc remote add -d origin https://dagshub.com/<dono>/artemishub_agents.dvc
-uv run dvc remote modify origin --local auth basic
-uv run dvc remote modify origin --local user <usuario-dagshub>
-uv run dvc remote modify origin --local password <token-dagshub>
-uv run dvc push
+uv run dvc remote add --default dagshub s3://dvc
+uv run dvc remote modify dagshub endpointurl https://dagshub.com/CamilaSilvaC/artemishub-rais-dvc.s3
+uv run dvc pull
 ```
 
-- [ ] **Passo 3:** conferir de outra máquina (ou de um clone limpo) com `uv run dvc pull`. Esperado: `data/processed/rais_stem_2025_brasil.parquet` com o md5 `9736758f3a0d4570a6547666df680861` do `.dvc`.
-- [ ] **Passo 4:** criar um token só de leitura para o CI e salvar como `secrets.DAGSHUB_USER` e `secrets.DAGSHUB_TOKEN` no repositório; documentar no README o `dvc pull` para a equipe.
-- [ ] **Passo 5:** `data.yml` roda só quando mudam `src/salarios.py`, `src/rais_*.py`, `data/**` ou `config/**` (filtro `paths`), e também por `workflow_dispatch`.
-- [ ] **Passo 6 (ponto de atenção 3):** passos do job: configurar o login com `uv run dvc remote modify origin --local user/password` a partir dos `secrets`, depois `uv run dvc pull data/processed/rais_stem_2025_brasil.parquet.dvc`, depois `uv run python -m src.salarios gerar --ano 2025`, depois `git diff --exit-code data/agregados/`. Esperado: sem diferença. Se houver, o job falha com a mensagem "rode `python -m src.salarios gerar` e commite `data/agregados/`".
-- [ ] **Passo 7:** commit `ci: confere se as tabelas agregadas batem com o parquet do DVC`.
+- [x] **Passo 3:** conferir em clone limpo os hashes do Parquet (`9736758f3a0d4570a6547666df680861`) e do JSON (`105c72b9d87a835437432b3ee6b7c34b`) e regenerar os agregados.
+- [ ] **Passo 4:** configurar os Secrets `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` no GitHub Actions com acesso de leitura.
+- [x] **Passo 5:** `data.yml` roda por `workflow_dispatch` e quando mudam os dados, a configuração, as dependências ou o código de agregação.
+- [x] **Passo 6:** o job usa as credenciais S3 via ambiente, baixa os dois ponteiros DVC, regenera os agregados e falha quando há diferenças versionadas ou arquivos agregados novos.
+- [x] **Passo 7:** implementar a verificação na issue #34 e atualizar a documentação.
 
 ## Fase 3: avaliação dos agentes (semanas 4 e 5)
 
