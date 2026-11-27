@@ -67,14 +67,7 @@ O prompt da Análise mora só no Langfuse (`artemis/analise-resposta`, label `pr
 
 ## 🧠 Desenvolvimento orientado a spec (SDD)
 
-O repositório usa as mesmas skills de agente do [artemishub_rag](https://github.com/ArtemisHubApp/artemishub_rag): o `orchestrator` classifica o tamanho e o risco da mudança e as skills do [superpowers](https://github.com/obra/superpowers) conduzem o fluxo (brainstorming → spec → plano → TDD → revisão). Elas ficam em `.claude/skills/`, com as versões registradas em `skills-lock.json`. Specs e planos vão para `docs/superpowers/`.
-
-Para instalar ou atualizar as skills (via [skills.sh](https://skills.sh)):
-
-```bash
-npx skills add obra/superpowers --skill '*' -a claude-code -y
-npx skills add moonlight-lupin/agent-skills --skill orchestrator -a claude-code -y
-```
+As regras de SDD e as skills dos agentes de IA ficam só no [orquestrador](https://github.com/ArtemisHubApp/artemishub_orchestration): o `AGENTS.md` e a skill `artemis-sdd`, que classifica o tamanho e o risco da mudança, mais as skills do [superpowers](https://github.com/obra/superpowers), que conduzem o fluxo (brainstorming → spec → plano → TDD → revisão). Abra o agente na raiz do orquestrador para que ele leia as duas coisas. Specs e planos deste repositório vão para `docs/superpowers/`.
 
 ## 📋 Contribuindo
 
